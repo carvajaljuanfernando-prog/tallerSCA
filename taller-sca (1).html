@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Síndrome coronario agudo · Taller de razonamiento clínico</title>
+<meta name="description" content="Taller interactivo de aprendizaje basado en problemas sobre síndrome coronario agudo, fundamentado en la Quinta Definición Universal del Infarto de Miocardio (2026) y la Guía ESC 2023.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>/* ============================================================
+   Taller SCA — sistema visual
+   Base: sala de urgencias de noche (azul profundo) contra el
+   papel de electrocardiograma (material real, cálido).
+   ============================================================ */
+:root{
+  --navy-900:#08192A; --navy-850:#0A2137; --navy-800:#0D2B45;
+  --navy-700:#15395B; --navy-600:#1F4E77; --line:#20456A;
+  --gold:#C4923A; --gold-lt:#E4BC77; --gold-dim:#7A5C24;
+  --paper:#FFF6F1; --ecg-paper:#FFF6F1; --ecg-grid-s:#F1C0B7; --ecg-grid-l:#E08C80; --ecg-trace:#16222E;
+  --ink:#16222E; --text:#DDE8F1; --muted:#8DA6BC; --faint:#5E7B96;
+  --alert:#DA5F52; --alert-bg:#3A1A18; --ok:#45A88F; --ok-bg:#123029;
+  --warn:#D6A250; --warn-bg:#33280F;
+  --r:3px;
+  --f-ui:'Space Grotesk','Segoe UI',system-ui,-apple-system,sans-serif;
+  --f-txt:'Spectral',Georgia,'Times New Roman',serif;
+  --f-num:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--navy-900);color:var(--text);
+  font-family:var(--f-txt);font-size:17px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,button,.ui{font-family:var(--f-ui)}
+h1{font-size:clamp(28px,4.4vw,46px);line-height:1.06;letter-spacing:-.02em;margin:0 0 .4em;font-weight:700}
+h2{font-size:clamp(21px,2.6vw,28px);line-height:1.18;letter-spacing:-.01em;margin:0 0 .5em;font-weight:600}
+h3{font-size:19px;margin:1.6em 0 .5em;font-weight:600;color:var(--gold-lt)}
+p{margin:0 0 1em;max-width:70ch}
+a{color:var(--gold-lt)}
+strong{font-weight:600;color:#fff}
+
+/* ---------- Monitor fijo ---------- */
+#monitor{
+  position:sticky;top:0;z-index:60;background:var(--navy-850);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:stretch;gap:0;overflow-x:auto;scrollbar-width:none;
+}
+#monitor::-webkit-scrollbar{display:none}
+.vit{padding:9px 16px;border-right:1px solid var(--line);min-width:96px;flex:0 0 auto}
+.vit .k{font-family:var(--f-ui);font-size:10.5px;letter-spacing:.09em;color:var(--faint);text-transform:uppercase}
+.vit .v{font-family:var(--f-num);font-size:21px;font-weight:600;line-height:1.15;color:var(--text);transition:color .4s}
+.vit .v small{font-size:12px;color:var(--muted);font-weight:400}
+.vit.bad .v{color:var(--alert)}
+.vit.good .v{color:var(--ok)}
+.vit.warn .v{color:var(--warn)}
+.vit.pulse .v{animation:pulseNum .5s ease}
+@keyframes pulseNum{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+.vit#clock{background:var(--navy-800);border-right:2px solid var(--gold-dim)}
+.vit#clock .v{color:var(--gold-lt);letter-spacing:.02em}
+#monitor .spacer{flex:1 1 auto;border-right:none}
+#phaseTag{padding:9px 16px;font-family:var(--f-ui);font-size:12px;color:var(--muted);align-self:center;text-align:right}
+#phaseTag b{color:var(--gold-lt);font-weight:600}
+
+/* ---------- Barra de progreso del taller ---------- */
+#railWrap{position:sticky;top:0;z-index:59}
+#rail{display:flex;height:3px;background:var(--navy-800)}
+#rail i{flex:1;background:transparent;border-right:1px solid var(--navy-900);transition:background .5s}
+#rail i.done{background:var(--gold-dim)}
+#rail i.now{background:var(--gold)}
+
+/* ---------- Estructura ---------- */
+main{max-width:1180px;margin:0 auto;padding:0 20px 120px}
+section.screen{display:none;padding-top:34px;scroll-margin-top:92px;animation:enter .34s ease both}
+section.screen.on{display:block}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){section.screen{animation:none}*{transition:none!important}}
+
+.eyebrow{font-family:var(--f-ui);font-size:12.5px;letter-spacing:.05em;color:var(--gold);margin-bottom:10px;font-weight:500}
+.lede{font-size:19.5px;color:var(--muted);max-width:64ch}
+.rule{height:1px;background:var(--line);margin:30px 0;border:0}
+
+/* ---------- Portada ---------- */
+.cover{display:grid;grid-template-columns:1.02fr .98fr;gap:48px;align-items:center;min-height:78vh}
+@media(max-width:900px){.cover{grid-template-columns:1fr;gap:26px;min-height:auto}}
+.cover .brandline{font-family:var(--f-ui);font-size:13.5px;color:var(--gold);margin-bottom:26px;font-weight:500}
+.cover .brandline b{font-weight:500;color:var(--muted);display:block;margin-top:2px}
+.coverEcg{background:var(--paper);border-radius:var(--r);padding:10px;box-shadow:0 24px 60px rgba(0,0,0,.42)}
+.coverEcg svg{width:100%;display:block}
+.agenda{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.agenda li{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);font-family:var(--f-ui);font-size:14.5px;align-items:baseline}
+.agenda li span{font-family:var(--f-num);font-size:12.5px;color:var(--gold);min-width:52px}
+.agenda li em{color:var(--muted);font-style:normal;margin-left:auto;font-size:12.5px}
+
+/* ---------- Tarjetas de contenido ---------- */
+.panel{background:var(--navy-850);border:1px solid var(--line);border-radius:var(--r);padding:22px 26px;margin:20px 0}
+.panel.tight{padding:16px 20px}
+.panel h3:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* Comparación 4.ª vs 5.ª */
+.shift{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch;margin:16px 0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.shift .old,.shift .new{padding:14px 18px}
+.shift .old{background:#0B2338;color:var(--muted)}
+.shift .new{background:#10314C}
+.shift .mid{width:38px;background:var(--navy-800);display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:var(--f-ui);font-size:17px}
+.shift h4{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin:0 0 6px;font-family:var(--f-ui);font-weight:500}
+.shift p{margin:0;font-size:15.5px;line-height:1.5}
+.shift .new p{color:var(--text)}
+@media(max-width:720px){.shift{grid-template-columns:1fr}.shift .mid{width:auto;height:26px;transform:rotate(90deg)}}
+
+/* ---------- Viñeta clínica ---------- */
+.vignette{border-left:3px solid var(--gold);background:linear-gradient(90deg,rgba(196,146,58,.09),transparent 70%);padding:16px 22px;margin:20px 0}
+.vignette p:last-child{margin-bottom:0}
+.vignette .said{font-style:italic;color:var(--gold-lt)}
+
+/* ---------- ECG ---------- */
+.ecgBox{scroll-margin-top:100px;background:var(--paper);border-radius:var(--r);padding:8px;margin:18px 0;box-shadow:0 14px 40px rgba(0,0,0,.35);position:relative}
+.ecgBox svg{width:100%;display:block}
+.ecg-lbl{font-family:var(--f-ui);font-size:13px;font-weight:700;fill:var(--ink)}
+.ecg-meta{font-family:var(--f-ui);font-size:10px;fill:#9d7f77}
+.ecgCap{font-family:var(--f-ui);font-size:12.5px;color:var(--faint);margin:-8px 0 18px;text-align:right}
+.ecgBox.reveal svg path{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.5s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* ---------- Decisiones ---------- */
+.qStem{scroll-margin-top:100px;font-family:var(--f-ui);font-size:19px;font-weight:600;margin:26px 0 14px;color:#fff;line-height:1.35}
+.opts{display:flex;flex-direction:column;gap:9px;margin-bottom:8px}
+.opt{
+  display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;
+  background:var(--navy-850);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;color:var(--text);font-family:var(--f-txt);font-size:16.5px;line-height:1.48;
+  cursor:pointer;transition:border-color .16s,background .16s,transform .1s;
+}
+.opt:hover:not(:disabled){border-color:var(--gold-dim);background:#0F2E4A}
+.opt:active:not(:disabled){transform:translateY(1px)}
+.opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.opt .k{font-family:var(--f-ui);font-weight:600;font-size:13px;color:var(--gold);flex:0 0 18px;padding-top:2px}
+.opt:disabled{cursor:default;opacity:.74}
+.opt:disabled.picked{opacity:1}
+.opt.picked{opacity:1}
+.opt.picked.good{border-color:var(--ok);background:var(--ok-bg)}
+.opt.picked.bad{border-color:var(--alert);background:var(--alert-bg)}
+.opt.picked.mid{border-color:var(--warn);background:var(--warn-bg)}
+.opt.isbest:not(.picked){border-color:var(--ok);border-style:dashed}
+
+.fb{border-radius:var(--r);padding:15px 18px;margin:4px 0 6px;font-size:16px;border-left:3px solid;animation:enter .26s ease both}
+.fb.good{background:var(--ok-bg);border-color:var(--ok)}
+.fb.bad{background:var(--alert-bg);border-color:var(--alert)}
+.fb.mid{background:var(--warn-bg);border-color:var(--warn)}
+.fb .verdict{font-family:var(--f-ui);font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:5px}
+.fb.good .verdict{color:var(--ok)}
+.fb.bad .verdict{color:var(--alert)}
+.fb.mid .verdict{color:var(--warn)}
+.fb p{margin:0 0 .6em}.fb p:last-child{margin:0}
+.fb .cost{font-family:var(--f-num);font-size:13px;color:var(--muted);display:inline-block;margin-top:8px;padding:2px 8px;border:1px solid var(--line);border-radius:2px}
+.src{font-family:var(--f-ui);font-size:12.5px;color:var(--faint);margin-top:10px;padding-top:8px;border-top:1px dotted var(--line)}
+
+/* ---------- Botones ---------- */
+.btn{
+  font-family:var(--f-ui);font-size:15px;font-weight:600;letter-spacing:.01em;
+  background:var(--gold);color:#14212C;border:0;border-radius:var(--r);
+  padding:12px 24px;cursor:pointer;transition:filter .16s
+}
+.btn:hover{filter:brightness(1.11)}
+.btn:focus-visible{outline:2px solid var(--gold-lt);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--gold-lt);border:1px solid var(--gold-dim)}
+.btn.ghost:hover{background:rgba(196,146,58,.1)}
+.btn:disabled{opacity:.35;cursor:not-allowed;filter:none}
+.navRow{display:flex;gap:12px;align-items:center;margin-top:30px;flex-wrap:wrap}
+.navRow .hint{font-family:var(--f-ui);font-size:13px;color:var(--faint)}
+
+/* ---------- Datos de laboratorio ---------- */
+.labs{width:100%;border-collapse:collapse;font-family:var(--f-ui);font-size:14.5px;margin:14px 0}
+.labs th{text-align:left;font-weight:500;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:6px 12px 6px 0;border-bottom:1px solid var(--line)}
+.labs td{padding:8px 12px 8px 0;border-bottom:1px solid var(--navy-800)}
+.labs td.n{font-family:var(--f-num);color:#fff}
+.labs td.hi{color:var(--alert);font-weight:600}
+.labs td.ok{color:var(--ok)}
+
+/* ---------- Estación ECG ---------- */
+.stationGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin:20px 0}
+.stCard{background:var(--navy-850);border:1px solid var(--line);border-radius:var(--r);padding:14px;cursor:pointer;transition:border-color .16s}
+.stCard:hover{border-color:var(--gold-dim)}
+.stCard.solved{border-color:var(--ok)}
+.stCard.failed{border-color:var(--alert)}
+.stCard h4{margin:0 0 4px;font-size:15px}
+.stCard p{font-size:13.5px;color:var(--muted);margin:0}
+.stCard .mark{font-family:var(--f-ui);font-size:12px;color:var(--faint)}
+
+/* ---------- Examen ---------- */
+.exQ{border-top:1px solid var(--line);padding:22px 0}
+.exQ:first-of-type{border-top:0}
+.exN{font-family:var(--f-num);font-size:12.5px;color:var(--gold);margin-bottom:6px}
+.score{font-family:var(--f-num);font-size:60px;color:var(--gold-lt);line-height:1}
+.scoreLab{font-family:var(--f-ui);font-size:14px;color:var(--muted)}
+.bar{height:7px;background:var(--navy-800);border-radius:4px;overflow:hidden;margin:8px 0 16px}
+.bar i{display:block;height:100%;background:var(--gold);transition:width .8s ease}
+
+/* ---------- Modo docente ---------- */
+.teach{display:none;border:1px dashed var(--gold-dim);background:rgba(196,146,58,.06);border-radius:var(--r);padding:14px 18px;margin:14px 0}
+body.docente .teach{display:block}
+.teach h4{margin:0 0 6px;font-family:var(--f-ui);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.teach p,.teach li{font-size:15px;color:var(--text)}
+.teach ul{margin:.4em 0;padding-left:20px}
+#docenteBtn{position:fixed;right:14px;bottom:14px;z-index:70;font-size:12.5px;padding:8px 14px}
+
+/* ---------- Utilidades ---------- */
+.tag{display:inline-block;font-family:var(--f-ui);font-size:11.5px;letter-spacing:.05em;padding:3px 9px;border-radius:2px;background:var(--navy-700);color:var(--gold-lt);margin-right:6px;vertical-align:2px}
+.tag.red{background:var(--alert-bg);color:var(--alert)}
+.tag.grn{background:var(--ok-bg);color:var(--ok)}
+ul.clean{list-style:none;padding:0;margin:1em 0}
+ul.clean li{padding:7px 0 7px 24px;position:relative;border-bottom:1px solid var(--navy-800);font-size:16px}
+ul.clean li:before{content:'';position:absolute;left:4px;top:16px;width:7px;height:7px;background:var(--gold);border-radius:50%}
+ul.clean li.no:before{background:var(--alert)}
+ul.clean li.yes:before{background:var(--ok)}
+.kbd{font-family:var(--f-num);font-size:12px;background:var(--navy-700);padding:2px 6px;border-radius:2px;border:1px solid var(--line)}
+.printOnly{display:none}
+@media print{
+  body{background:#fff;color:#000;font-size:11pt}
+  #monitor,#railWrap,.navRow,#docenteBtn,.opts,.btn{display:none!important}
+  section.screen{display:none!important}
+  section.screen.printme{display:block!important}
+  .printOnly{display:block}
+  .panel{border:1px solid #999;background:#fff}
+  h1,h2,h3{color:#000}
+  .score{color:#000}
+}
+
+/* Tira de detalle de la portada */
+.heroStrip{background:var(--paper);border-radius:var(--r);padding:14px 12px 8px;box-shadow:0 26px 64px rgba(0,0,0,.45)}
+.heroStrip svg{width:100%;display:block}
+.heroNote{display:flex;gap:10px;align-items:baseline;font-family:var(--f-ui);font-size:12.5px;color:var(--faint);margin-top:10px;line-height:1.45}
+.heroNote b{color:var(--gold);font-weight:600;flex:0 0 auto}
+.step{scroll-margin-top:100px}
+</style>
+</head>
+<body>
+
+<div id="railWrap"><div id="rail"></div></div>
+
+<div id="monitor" style="display:none">
+  <div class="vit" id="clock"><div class="k">Desde el ingreso</div><div class="v" id="vClock">+0<small> min</small></div></div>
+  <div class="vit"><div class="k">Frecuencia</div><div class="v" id="vFc">—</div></div>
+  <div class="vit"><div class="k">Presión arterial</div><div class="v" id="vPa">—</div></div>
+  <div class="vit"><div class="k">Saturación</div><div class="v" id="vSpo2">—</div></div>
+  <div class="vit"><div class="k">Respiratoria</div><div class="v" id="vFr">—</div></div>
+  <div class="vit"><div class="k">Ritmo</div><div class="v" id="vRitmo" style="font-size:15px;padding-top:4px">—</div></div>
+  <div class="spacer"></div>
+  <div id="phaseTag"></div>
+</div>
+
+<main>
+
+<!-- ============ PORTADA ============ -->
+<section class="screen on" id="sc-portada">
+  <div class="cover">
+    <div>
+      <div class="brandline">Universidad de Santander, Facultad de Medicina <b>Rotación de Cardiología</b></div>
+      <h1>El músculo se muere<br>mientras usted decide.</h1>
+      <p class="lede">Taller de razonamiento clínico en síndrome coronario agudo para el médico de atención inicial. Tres pacientes, decisiones con consecuencias y un reloj que no se detiene.</p>
+      <ul class="agenda">
+        <li><span>10 min</span> Lo que cambió en 2026 <em>Quinta Definición Universal</em></li>
+        <li><span>25 min</span> Caso 1: hombre de 62 años <em>elevación del ST</em></li>
+        <li><span>25 min</span> Caso 2: mujer de 58 años <em>sin elevación del ST</em></li>
+        <li><span>20 min</span> Caso 3: hombre de 74 años <em>lesión o infarto</em></li>
+        <li><span>15 min</span> Estación de electrocardiografía <em>seis trazados</em></li>
+        <li><span>20 min</span> Evaluación final y debriefing <em>quince preguntas</em></li>
+      </ul>
+      <div class="navRow">
+        <button class="btn" onclick="next()">Comenzar el taller</button>
+        <span class="hint">Duración total estimada: 2 horas</span>
+      </div>
+    </div>
+    <div>
+      <div class="heroStrip" id="coverEcg"></div>
+      <div class="heroNote"><b>DII, DIII, aVF</b><span>Elevación del segmento ST en tres derivaciones contiguas. Este paciente aparece en el primer caso y su desenlace depende de cuántos minutos tarde el grupo en reconocerlo.</span></div>
+      <div class="heroNote" style="margin-top:14px"><b>Nota</b><span>Todos los electrocardiogramas del taller se generan por síntesis de señal. No corresponden a registros de pacientes reales.</span></div>
+    </div>
+  </div>
+
+  <div class="teach">
+    <h4>Antes de proyectar</h4>
+    <p>Active el modo docente con el botón inferior derecho o con <span class="kbd">Ctrl + D</span> para ver las notas de facilitación en cada caso. Las notas quedan ocultas para el estudiante mientras el modo esté desactivado.</p>
+    <p><strong>Formato sugerido:</strong> parejas por dispositivo, con votación a mano alzada antes de que cada pareja registre su decisión. La discusión ocurre <em>antes</em> de pulsar la opción, no después.</p>
+  </div>
+</section>
+
+<!-- ============ LO QUE CAMBIÓ ============ -->
+<section class="screen" id="sc-nuevo">
+  <div class="eyebrow">Fundamento</div>
+  <h1>Lo que cambió en 2026</h1>
+  <p class="lede">La Quinta Definición Universal del Infarto de Miocardio, publicada conjuntamente por la Sociedad Europea de Cardiología, el Colegio Americano de Cardiología, la Asociación Americana del Corazón y la Federación Mundial del Corazón, reemplazó una clasificación que llevaba catorce años en uso.</p>
+
+  <h3>El cambio que reordena todo lo demás</h3>
+  <div class="shift">
+    <div class="old"><h4>Cuarta definición, 2018</h4><p>Infarto de tipo 1, 2, 3, 4a, 4b, 4c y 5. Siete categorías numéricas que no comunicaban el mecanismo y se aplicaban de forma inconsistente.</p></div>
+    <div class="mid">&rarr;</div>
+    <div class="new"><h4>Quinta definición, 2026</h4><p>Tres escenarios clínicos: infarto <strong>primario</strong>, <strong>secundario</strong> y <strong>relacionado con procedimiento</strong>. La etiqueta dice qué le pasó al paciente.</p></div>
+  </div>
+
+  <div class="grid3">
+    <div class="panel">
+      <h3 style="margin-top:0">Infarto primario</h3>
+      <p>Presentación espontánea por una patología coronaria aguda. Ya no se limita a la aterotrombosis: incluye disección coronaria espontánea, embolia, vasoespasmo y la falla de stent o injerto ocurrida más de 30 días después del procedimiento.</p>
+      <p style="font-size:14.5px;color:var(--muted);margin:0">Los criterios priorizan la <strong>sensibilidad</strong>: es preferible investigar de más que perder una oclusión.</p>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">Infarto secundario</h3>
+      <p>Desequilibrio entre aporte y demanda de oxígeno causado por otra condición aguda: taquiarritmia, sepsis, anemia grave, hipotensión, hipoxemia, crisis hipertensiva.</p>
+      <p style="font-size:14.5px;color:var(--muted);margin:0">Los criterios priorizan la <strong>especificidad</strong>, con confirmación por imagen, para no llamar infarto a toda troponina elevada.</p>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">Relacionado con procedimiento</h3>
+      <p>Complicación coronaria dentro de los 30 días de un procedimiento cardíaco, percutáneo o quirúrgico. Los criterios son ahora los mismos para ambos.</p>
+      <p style="font-size:14.5px;color:var(--muted);margin:0">Desaparecieron los umbrales arbitrarios de 5 y 10 veces el percentil 99; el diagnóstico ya no depende de un múltiplo del biomarcador.</p>
+    </div>
+  </div>
+
+  <h3>Cuatro cambios que usted usará esta semana</h3>
+  <ul class="clean">
+    <li><strong>Umbrales de troponina específicos por sexo.</strong> La lesión miocárdica se define con el percentil 99 propio de cada sexo. El umbral femenino es más bajo que el uniforme, y usar el uniforme subdiagnostica el infarto en mujeres.</li>
+    <li><strong>El tipo 3 desapareció.</strong> Cuando el infarto es la causa probable de una muerte ocurrida antes de completar los estudios, se aplica la clasificación clínica según el escenario o los hallazgos de la autopsia.</li>
+    <li><strong>MINOCA cambió de nombre y de estatus.</strong> Ahora significa <em>lesión</em> miocárdica con arterias coronarias no obstructivas, y es un diagnóstico de trabajo, no final: la mayoría de estos pacientes resulta tener miocarditis, síndrome de takotsubo u otra causa.</li>
+    <li><strong>Criterios para entornos de recursos limitados.</strong> Sin troponina ni imagen cardíaca, el diagnóstico se presume con síntomas de isquemia miocárdica aguda más cambios isquémicos nuevos en el ECG o desarrollo de ondas Q patológicas.</li>
+  </ul>
+
+  <div class="panel">
+    <h3 style="margin-top:0">La distinción que ordena la consulta de urgencias</h3>
+    <p><strong>Lesión miocárdica</strong> es un hallazgo de laboratorio: troponina por encima del percentil 99 específico por sexo. Es <em>aguda</em> si hay ascenso o descenso en mediciones seriadas, y <em>crónica</em> si dos o más valores permanecen elevados de forma estable en contexto clínico estable.</p>
+    <p><strong>Infarto de miocardio</strong> es un diagnóstico clínico: exige lesión miocárdica aguda <em>más</em> evidencia de isquemia, es decir síntomas, cambios electrocardiográficos nuevos, ondas Q patológicas o hallazgos de imagen compatibles.</p>
+    <p style="margin-bottom:0">Toda troponina elevada obliga a una pregunta antes que a un diagnóstico: <strong>¿qué está lesionando este miocardio?</strong></p>
+  </div>
+
+  <div class="teach">
+    <h4>Nota de facilitación</h4>
+    <p>Dedique aquí un máximo de 10 minutos. El objetivo no es que memoricen la clasificación, sino que salgan con dos frases: «la troponina define lesión, no infarto» y «el umbral de troponina depende del sexo». El resto se construye en los casos.</p>
+    <p>Pregunta de arranque útil: <em>«¿Cuántos de ustedes han visto que se diga que un paciente infartó porque tenía la troponina alta?»</em></p>
+  </div>
+
+  <div class="navRow"><button class="btn ghost" onclick="prev()">Atrás</button><button class="btn" onclick="next()">Ir al primer caso</button></div>
+</section>
+
+<!-- ============ CASOS (inyectados) ============ -->
+<div id="caseHost"></div>
+
+<!-- ============ ESTACIÓN DE ECG ============ -->
+<section class="screen" id="sc-estacion">
+  <div class="eyebrow">Estación de electrocardiografía</div>
+  <h1>Seis trazados, tres preguntas cada uno</h1>
+  <p class="lede">Para cada trazado: qué observo, qué significa, qué conducta orienta. Ese es el orden y no se puede saltar el primer paso.</p>
+  <p style="font-family:var(--f-ui);font-size:14px;color:var(--muted)">Resueltos: <strong id="stProg">0 de 6</strong></p>
+  <div id="stationBody"></div>
+  <div class="teach">
+    <h4>Nota de facilitación</h4>
+    <p>Proyecte cada trazado y conceda 60 segundos de discusión en parejas antes de revelar la respuesta. Los trazados 3 y 5 son los que más se fallan: el infarto posterior porque el ECG «no tiene elevación», y el trazado normal porque la ausencia de hallazgos se confunde con ausencia de enfermedad.</p>
+  </div>
+  <div class="navRow">
+    <button class="btn ghost" onclick="prev()">Atrás</button>
+    <button class="btn" id="stNext" onclick="next()" disabled>Ir a la evaluación</button>
+    <span class="hint">Complete los seis trazados para continuar.</span>
+  </div>
+</section>
+
+<!-- ============ EXAMEN ============ -->
+<section class="screen" id="sc-examen">
+  <div class="eyebrow">Evaluación final</div>
+  <h1>Quince preguntas</h1>
+  <p class="lede">Cada respuesta se retroalimenta de inmediato. No hay penalización por error: el propósito es cerrar brechas antes de salir del aula.</p>
+  <p style="font-family:var(--f-ui);font-size:14px;color:var(--muted)">Respondidas: <strong id="exProg">0 de 15</strong></p>
+  <div class="bar"><i id="exBar" style="width:0"></i></div>
+  <div id="examBody"></div>
+  <div class="navRow">
+    <button class="btn ghost" onclick="prev()">Atrás</button>
+    <button class="btn" id="exNext" onclick="next()" disabled>Ver resultados</button>
+  </div>
+</section>
+
+<!-- ============ RESULTADOS ============ -->
+<section class="screen" id="sc-resultados">
+  <div class="eyebrow">Cierre</div>
+  <h1>Su desempeño</h1>
+  <p class="lede">La ponderación sigue la lista de chequeo institucional: toma de decisiones 45%, interpretación electrocardiográfica 25%, evaluación de conocimientos 30%.</p>
+  <div id="resBody"></div>
+
+  <hr class="rule">
+  <h2>Las seis frases del taller</h2>
+  <ul class="clean">
+    <li class="yes">Electrocardiograma interpretado en menos de 10 minutos desde el primer contacto médico.</li>
+    <li class="yes">En el infarto con elevación del ST, la reperfusión no espera la troponina.</li>
+    <li class="yes">Un electrocardiograma sin elevación del ST puede contener una oclusión: De Winter, Wellens, infarto posterior, descenso difuso con aVR.</li>
+    <li class="yes">La troponina define lesión miocárdica; el infarto exige además evidencia de isquemia.</li>
+    <li class="yes">El percentil 99 depende del sexo. Pregunte cómo lo informa su laboratorio.</li>
+    <li class="yes">Angioplastia primaria si es posible en menos de 120 minutos; si no, fibrinólisis en menos de 10 minutos y traslado.</li>
+  </ul>
+
+  <div class="panel">
+    <h3 style="margin-top:0">Registro de desempeño</h3>
+    <p>Descargue su resultado para entregarlo al docente.</p>
+    <div class="navRow" style="margin-top:6px">
+      <input id="stuName" placeholder="Nombre completo" style="background:var(--navy-800);border:1px solid var(--line);color:var(--text);padding:11px 14px;border-radius:3px;font-family:var(--f-ui);font-size:15px;min-width:260px">
+      <button class="btn" onclick="exportResults()">Descargar registro</button>
+    </div>
+  </div>
+
+  <div class="teach">
+    <h4>Debriefing final, 10 minutos</h4>
+    <ul>
+      <li>¿Qué fue lo primero que identificaron en cada caso y por qué?</li>
+      <li>¿Qué información los hizo cambiar de conducta? ¿Qué información pidieron y no cambió nada?</li>
+      <li>¿En qué momento sintieron que tenían suficiente para actuar? ¿Actuaron ahí?</li>
+      <li>¿Qué harían distinto mañana, en su rotación, con el primer paciente con dolor torácico?</li>
+    </ul>
+    <p>Cierre con la regla de oro del debriefing: se analiza la decisión, no a la persona que la tomó.</p>
+  </div>
+
+  <div class="navRow"><button class="btn ghost" onclick="go(0)">Volver al inicio</button></div>
+</section>
+
+</main>
+
+<button class="btn ghost" id="docenteBtn">Modo docente</button>
+
+<script>/* ============================================================
+   Motor de síntesis de ECG de 12 derivaciones -> SVG
+   25 mm/s, 10 mm/mV. Todas las amplitudes en mV.
+   ============================================================ */
+
+const LEAD_ORDER = ['I','II','III','aVR','aVL','aVF','V1','V2','V3','V4','V5','V6'];
+
+function gauss(t, mu, sigma, amp) {
+  const z = (t - mu) / sigma;
+  return amp * Math.exp(-0.5 * z * z);
+}
+
+/* Un latido centrado en R = 0.
+   p:{a,mu,s} q:{a} r:{a} s:{a} stJ, stMid, t:{a,shape}
+   shape: 'normal' | 'sym' | 'biphasic-neg' | 'biphasic-pos' | 'flat' */
+function beat(t, L) {
+  let v = 0;
+
+  // Onda P
+  v += gauss(t, L.pMu !== undefined ? L.pMu : -0.170, 0.028, L.p || 0);
+
+  // QRS
+  if (L.q) v += gauss(t, -0.028, 0.011, L.q);
+  if (L.r) v += gauss(t, 0.0, 0.0135, L.r);
+  if (L.s) v += gauss(t, 0.032, 0.0135, L.s);
+  if (L.rp) v += gauss(t, 0.058, 0.012, L.rp); // R'
+
+  // Segmento ST + onda T
+  const tJ = 0.055;
+  const tT = L.tMu || 0.275;
+  const tEnd = tT + 0.16;
+  const stJ = L.stJ || 0;
+  const stT = L.stT !== undefined ? L.stT : stJ * 0.55;
+
+  if (t >= tJ && t <= tEnd) {
+    // línea base del ST desde J hasta el pico de T, y regreso a 0
+    let base;
+    if (t <= tT) {
+      const f = (t - tJ) / (tT - tJ);
+      base = stJ + (stT - stJ) * f;
+    } else {
+      const f = (t - tT) / (tEnd - tT);
+      base = stT * (1 - f);
+    }
+    v += base;
+  }
+
+  // Onda T
+  const ta = L.t || 0;
+  const tw = L.tw || 0.062;
+  switch (L.tShape) {
+    case 'sym':          // simétrica, ancha (hiperaguda o invertida simétrica)
+      v += gauss(t, tT, tw * 1.25, ta);
+      break;
+    case 'biphasic-neg': // positiva y luego negativa terminal (Wellens A)
+      v += gauss(t, tT - 0.030, tw * 0.85, ta * 0.75);
+      v += gauss(t, tT + 0.062, tw * 0.85, -Math.abs(ta) * 1.25);
+      break;
+    case 'biphasic-pos': // negativa y luego positiva
+      v += gauss(t, tT - 0.030, tw * 0.85, -Math.abs(ta) * 0.9);
+      v += gauss(t, tT + 0.062, tw * 0.85, Math.abs(ta) * 0.8);
+      break;
+    case 'flat':
+      v += gauss(t, tT, tw, ta * 0.25);
+      break;
+    default:             // asimétrica normal: ascenso lento, descenso rápido
+      v += gauss(t, tT, tw * 1.15, ta * 0.92);
+      v += gauss(t, tT + 0.035, tw * 0.72, ta * 0.25);
+  }
+  return v;
+}
+
+/* Genera la serie temporal de una derivación */
+function series(L, dur, rr, fs, seed) {
+  const n = Math.round(dur * fs);
+  const out = new Float64Array(n);
+  let rng = seed || 7;
+  const rand = () => { rng = (rng * 1103515245 + 12345) & 0x7fffffff; return rng / 0x7fffffff - 0.5; };
+
+  // posiciones de los complejos R
+  const beats = [];
+  let tb = 0.34;
+  while (tb < dur + rr) { beats.push(tb); tb += rr * (1 + (L.irregular ? rand() * 0.28 : rand() * 0.012)); }
+
+  for (let i = 0; i < n; i++) {
+    const t = i / fs;
+    let v = 0;
+    for (const b of beats) {
+      const dt = t - b;
+      if (dt > -0.30 && dt < 0.52) v += beat(dt, L);
+    }
+    // ruido fisiológico muy leve + deriva de línea de base
+    v += rand() * 0.012 + 0.018 * Math.sin(t * 1.1 + (L.phase || 0));
+    out[i] = v;
+  }
+  return out;
+}
+
+/* ---------- Definición de patrones ----------
+   Cada patrón: {name, rate, leads:{...}} con amplitudes en mV */
+
+const NORMAL = {
+  I:   { p:0.10, q:-0.04, r:0.75, s:-0.06, t:0.20 },
+  II:  { p:0.14, q:-0.05, r:1.10, s:-0.08, t:0.30 },
+  III: { p:0.05, q:-0.02, r:0.42, s:-0.10, t:0.11 },
+  aVR: { p:-0.12, q:0, r:0.06, s:-0.90, t:-0.20 },
+  aVL: { p:0.06, q:-0.03, r:0.38, s:-0.10, t:0.10 },
+  aVF: { p:0.10, q:-0.03, r:0.70, s:-0.08, t:0.19 },
+  V1:  { p:0.08, q:0, r:0.18, s:-1.05, t:0.08 },
+  V2:  { p:0.10, q:0, r:0.38, s:-1.55, t:0.42 },
+  V3:  { p:0.10, q:-0.02, r:0.75, s:-1.15, t:0.44 },
+  V4:  { p:0.11, q:-0.04, r:1.45, s:-0.55, t:0.42 },
+  V5:  { p:0.11, q:-0.05, r:1.55, s:-0.24, t:0.34 },
+  V6:  { p:0.10, q:-0.05, r:1.15, s:-0.12, t:0.25 }
+};
+
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+function apply(base, mods) {
+  const out = clone(base);
+  for (const k in mods) out[k] = Object.assign(out[k] || {}, mods[k]);
+  return out;
+}
+
+const PATTERNS = {};
+
+/* 1. IAMCEST inferior con extensión a VD (elevación II, III, aVF; III>II;
+      descenso recíproco I y aVL) */
+PATTERNS.stemi_inferior = {
+  rate: 104,
+  label: 'Derivaciones II, III, aVF',
+  leads: apply(NORMAL, {
+    II:  { stJ:0.34, stT:0.40, t:0.46, tShape:'sym', q:-0.10, r:0.85 },
+    III: { stJ:0.44, stT:0.52, t:0.42, tShape:'sym', r:0.28, q:-0.16 },
+    aVF: { stJ:0.38, stT:0.45, t:0.44, tShape:'sym', q:-0.12, r:0.55 },
+    I:   { stJ:-0.16, stT:-0.12, t:0.04 },
+    aVL: { stJ:-0.22, stT:-0.17, t:-0.14 },
+    V1:  { stJ:0.06, t:0.06 },
+    V2:  { stJ:-0.04, t:0.34 }
+  })
+};
+
+/* 2. Wellens tipo A: T bifásica en V2-V3, sin elevación del ST, sin ondas Q */
+PATTERNS.wellens_a = {
+  rate: 96,
+  label: 'Derivaciones V2 y V3',
+  leads: apply(NORMAL, {
+    V2: { stJ:0.04, t:0.42, tShape:'biphasic-neg', tw:0.070 },
+    V3: { stJ:0.03, t:0.40, tShape:'biphasic-neg', tw:0.070 },
+    V4: { t:0.18, tShape:'sym' }
+  })
+};
+
+/* 3. Wellens tipo B: T profundamente invertida y simétrica en V2-V4 */
+PATTERNS.wellens_b = {
+  rate: 88,
+  label: 'Derivaciones V2 a V4',
+  leads: apply(NORMAL, {
+    V2: { t:-0.55, tShape:'sym', tw:0.075, stJ:0.02 },
+    V3: { t:-0.62, tShape:'sym', tw:0.075, stJ:0.01 },
+    V4: { t:-0.45, tShape:'sym', tw:0.072 },
+    V5: { t:-0.18, tShape:'sym' }
+  })
+};
+
+/* 4. De Winter: descenso del ST de ascenso rectilíneo con T altas y simétricas
+      en V2-V5, elevación leve en aVR */
+PATTERNS.de_winter = {
+  rate: 98,
+  label: 'Derivaciones V2 a V5',
+  leads: apply(NORMAL, {
+    V1: { stJ:-0.12, stT:0.05, t:0.35, tShape:'sym' },
+    V2: { stJ:-0.22, stT:0.10, t:1.05, tShape:'sym', tw:0.072 },
+    V3: { stJ:-0.24, stT:0.12, t:1.10, tShape:'sym', tw:0.072 },
+    V4: { stJ:-0.22, stT:0.10, t:0.98, tShape:'sym', tw:0.070 },
+    V5: { stJ:-0.18, stT:0.08, t:0.72, tShape:'sym', tw:0.068 },
+    V6: { stJ:-0.10, stT:0.04, t:0.42, tShape:'sym' },
+    aVR:{ stJ:0.12, t:-0.10 }
+  })
+};
+
+/* 5. Infarto posterior: descenso del ST V1-V3 con R dominante en V2 */
+PATTERNS.posterior = {
+  rate: 86,
+  label: 'Derivaciones V1 a V3',
+  leads: apply(NORMAL, {
+    V1: { r:0.60, s:-0.48, stJ:-0.20, stT:-0.15, t:0.24 },
+    V2: { r:1.30, s:-0.35, stJ:-0.34, stT:-0.26, t:0.44, tw:0.056 },
+    V3: { r:1.05, s:-0.60, stJ:-0.30, stT:-0.22, t:0.36 },
+    V4: { stJ:-0.08, t:0.30 },
+    II: { stJ:0.04, t:0.28 }
+  })
+};
+
+/* 6. Descenso difuso del ST con elevación en aVR (enfermedad de tronco o
+      de tres vasos / desequilibrio aporte-demanda grave) */
+PATTERNS.avr_global = {
+  rate: 122,
+  label: 'Descenso difuso con aVR',
+  leads: apply(NORMAL, {
+    I:  { stJ:-0.14, t:0.08 },
+    II: { stJ:-0.22, stT:-0.16, t:0.10 },
+    III:{ stJ:-0.14, t:0.04 },
+    aVF:{ stJ:-0.19, t:0.06 },
+    aVL:{ stJ:-0.10, t:0.04 },
+    aVR:{ stJ:0.22, stT:0.17, t:0.16, tShape:'sym' },
+    V2: { stJ:-0.14, t:0.20 },
+    V3: { stJ:-0.24, stT:-0.18, t:0.12 },
+    V4: { stJ:-0.32, stT:-0.24, t:0.08, r:1.05 },
+    V5: { stJ:-0.30, stT:-0.22, t:0.06, r:1.10 },
+    V6: { stJ:-0.22, stT:-0.16, t:0.08, r:0.85 }
+  })
+};
+
+/* 7. ECG normal (trampa del paciente que consulta muy temprano) */
+PATTERNS.normal = { rate: 78, label: 'Sin cambios isquémicos', leads: clone(NORMAL) };
+
+/* 8. IAMCEST anterior extenso */
+PATTERNS.stemi_anterior = {
+  rate: 92,
+  label: 'Derivaciones V1 a V5',
+  leads: apply(NORMAL, {
+    V1: { stJ:0.24, stT:0.30, t:0.30, tShape:'sym', r:0.10, s:-0.60 },
+    V2: { stJ:0.42, stT:0.52, t:0.50, tShape:'sym', r:0.20, s:-0.70, q:-0.08 },
+    V3: { stJ:0.45, stT:0.55, t:0.48, tShape:'sym', r:0.25, s:-0.50, q:-0.12 },
+    V4: { stJ:0.36, stT:0.44, t:0.42, tShape:'sym', r:0.55, s:-0.30, q:-0.14 },
+    V5: { stJ:0.22, stT:0.27, t:0.32, tShape:'sym', r:0.90 },
+    V6: { stJ:0.10, t:0.24 },
+    I:  { stJ:0.12, t:0.20 },
+    aVL:{ stJ:0.14, t:0.14 },
+    III:{ stJ:-0.12, t:0.04 },
+    aVF:{ stJ:-0.08, t:0.10 }
+  })
+};
+
+/* ---------- Renderizado a SVG ---------- */
+/* mmPx: px por mm. Formato 3x4 + tira de ritmo de DII */
+function renderECG(patternKey, opts) {
+  opts = opts || {};
+  const P = PATTERNS[patternKey];
+  if (!P) throw new Error('Patrón desconocido: ' + patternKey);
+  const mm = opts.mmPx || 4;
+  const colDur = opts.colDur || 2.5;     // s por columna
+  const rowH = 40;                        // mm por fila
+  const cols = 4, rows = 3;
+  const stripH = 38;
+  const padL = 4, padT = 4, padR = 4, padB = 4;
+  const wMM = padL + colDur * 25 * cols + padR;
+  const hMM = padT + rows * rowH + stripH + padB;
+  const W = wMM * mm, H = hMM * mm;
+  const fs = 500;
+  const rr = 60 / P.rate;
+
+  // series por derivación (una sola pasada larga para continuidad temporal)
+  const total = colDur * cols + 0.5;
+  const data = {};
+  let si = 3;
+  for (const L of LEAD_ORDER) { data[L] = series(P.leads[L], total, rr, fs, si++ * 977 + 13); }
+
+  const parts = [];
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" class="ecg-svg" role="img" aria-label="Electrocardiograma de 12 derivaciones">`);
+  parts.push(`<defs>
+  <pattern id="ecgSm${patternKey}" width="${mm}" height="${mm}" patternUnits="userSpaceOnUse">
+    <path d="M ${mm} 0 L 0 0 0 ${mm}" fill="none" stroke="var(--ecg-grid-s)" stroke-width="0.5"/>
+  </pattern>
+  <pattern id="ecgLg${patternKey}" width="${mm*5}" height="${mm*5}" patternUnits="userSpaceOnUse">
+    <rect width="${mm*5}" height="${mm*5}" fill="url(#ecgSm${patternKey})"/>
+    <path d="M ${mm*5} 0 L 0 0 0 ${mm*5}" fill="none" stroke="var(--ecg-grid-l)" stroke-width="1"/>
+  </pattern></defs>`);
+  parts.push(`<rect width="${W}" height="${H}" fill="var(--ecg-paper)"/>`);
+  parts.push(`<rect width="${W}" height="${H}" fill="url(#ecgLg${patternKey})"/>`);
+
+  const toX = (tSec, col) => (padL + col * colDur * 25 + tSec * 25) * mm;
+  const toY = (mv, baseMM) => (baseMM - mv * 10) * mm;
+
+  function path(lead, col, baseMM, t0, t1) {
+    const d = data[lead];
+    let s = '';
+    const i0 = Math.round(t0 * fs), i1 = Math.round(t1 * fs);
+    for (let i = i0; i < i1; i++) {
+      const t = (i - i0) / fs;
+      const x = toX(t, col).toFixed(1);
+      const y = toY(d[i], baseMM).toFixed(1);
+      s += (i === i0 ? 'M' : 'L') + x + ' ' + y + ' ';
+    }
+    return `<path d="${s}" fill="none" stroke="var(--ecg-trace)" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+
+  // pulso de calibración al inicio de cada fila
+  function calib(baseMM) {
+    const x0 = padL * mm, w = 5 * mm, h = 10 * mm;
+    const y = baseMM * mm;
+    return `<path d="M ${x0-mm*3} ${y} L ${x0} ${y} L ${x0} ${y-h} L ${x0+w} ${y-h} L ${x0+w} ${y} L ${x0+w+mm*2} ${y}" fill="none" stroke="var(--ecg-trace)" stroke-width="1.4"/>`;
+  }
+
+  for (let r = 0; r < rows; r++) {
+    const baseMM = padT + r * rowH + rowH * 0.55;
+    for (let c = 0; c < cols; c++) {
+      const lead = LEAD_ORDER[c * 3 + r];
+      parts.push(path(lead, c, baseMM, c * colDur, (c + 1) * colDur));
+      parts.push(`<text x="${(padL + c*colDur*25 + 1.5)*mm}" y="${(baseMM - 14)*mm}" class="ecg-lbl">${lead}</text>`);
+      if (c > 0) {
+        const x = toX(0, c);
+        parts.push(`<line x1="${x}" y1="${(baseMM-13)*mm}" x2="${x}" y2="${(baseMM+13)*mm}" stroke="var(--ecg-trace)" stroke-width="0.8" opacity="0.5"/>`);
+      }
+    }
+  }
+  // tira de ritmo (DII completa)
+  const stripBase = padT + rows * rowH + stripH * 0.55;
+  let s = '';
+  const dII = data['II'];
+  const nAll = Math.round(colDur * cols * fs);
+  for (let i = 0; i < nAll; i++) {
+    const t = i / fs;
+    const x = ((padL + t * 25) * mm).toFixed(1);
+    const y = toY(dII[i], stripBase).toFixed(1);
+    s += (i === 0 ? 'M' : 'L') + x + ' ' + y + ' ';
+  }
+  parts.push(`<path d="${s}" fill="none" stroke="var(--ecg-trace)" stroke-width="1.4" stroke-linejoin="round"/>`);
+  parts.push(`<text x="${(padL+1.5)*mm}" y="${(stripBase-13)*mm}" class="ecg-lbl">II</text>`);
+  for (let r = 0; r < rows; r++) parts.push(calib(padT + r * rowH + rowH * 0.55));
+  parts.push(calib(stripBase));
+  parts.push(`<text x="${W - 6}" y="${H - 6}" class="ecg-meta" text-anchor="end">25 mm/s   10 mm/mV   ${Math.round(P.rate)} lpm</text>`);
+  parts.push('</svg>');
+  return parts.join('\n');
+}
+
+
+/* Tira ampliada: pocas derivaciones, gran tamaño, para la portada */
+function renderStrip(patternKey, leads, opts){
+  opts = opts || {};
+  const P = PATTERNS[patternKey];
+  const mm = opts.mmPx || 7;
+  const dur = opts.dur || 3.2;
+  const rowH = 26, padL = 3, padT = 3;
+  const wMM = padL + dur*25 + 3;
+  const hMM = padT + leads.length*rowH + 3;
+  const W = wMM*mm, H = hMM*mm, fs = 500, rr = 60/P.rate;
+  const parts = [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Detalle de electrocardiograma">`];
+  parts.push(`<defs><pattern id="hsS" width="${mm}" height="${mm}" patternUnits="userSpaceOnUse"><path d="M ${mm} 0 L 0 0 0 ${mm}" fill="none" stroke="var(--ecg-grid-s)" stroke-width="0.6"/></pattern>
+  <pattern id="hsL" width="${mm*5}" height="${mm*5}" patternUnits="userSpaceOnUse"><rect width="${mm*5}" height="${mm*5}" fill="url(#hsS)"/><path d="M ${mm*5} 0 L 0 0 0 ${mm*5}" fill="none" stroke="var(--ecg-grid-l)" stroke-width="1.1"/></pattern></defs>`);
+  parts.push(`<rect width="${W}" height="${H}" fill="var(--ecg-paper)"/><rect width="${W}" height="${H}" fill="url(#hsL)"/>`);
+  leads.forEach((lead,i)=>{
+    const d = series(P.leads[lead], dur+0.4, rr, fs, 41+i*131);
+    const base = padT + i*rowH + rowH*0.55;
+    let s='';
+    const n = Math.round(dur*fs);
+    for(let k=0;k<n;k++){
+      const x=((padL + (k/fs)*25)*mm).toFixed(1);
+      const y=((base - d[k]*10)*mm).toFixed(1);
+      s += (k?'L':'M')+x+' '+y+' ';
+    }
+    parts.push(`<path d="${s}" fill="none" stroke="var(--ecg-trace)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(`<text x="${(padL+1)*mm}" y="${(base-9)*mm}" style="font:700 ${mm*2.4}px var(--f-ui);fill:var(--ink)">${lead}</text>`);
+  });
+  parts.push('</svg>');
+  return parts.join('');
+}
+
+if (typeof module !== 'undefined') module.exports = { renderECG, renderStrip, PATTERNS, LEAD_ORDER };
+</script>
+<script>/* ============================================================
+   Contenido clínico del taller
+   Fuentes: Quinta Definición Universal del Infarto de Miocardio
+   (ESC/ACC/AHA/WHF, 2026) y Guía ESC 2023 de síndromes
+   coronarios agudos. Redacción propia.
+   ============================================================ */
+
+const CASES = [
+/* ================= CASO 1 ================= */
+{
+  id:'c1',
+  titulo:'Un hombre de 62 años que no puede esperar',
+  subtitulo:'Presentación clásica. La variable que se mide es el tiempo.',
+  vitals:{fc:104, pa:'158/94', spo2:94, fr:22, ritmo:'Sinusal'},
+  clock:0,
+  intro:`<p>Son las 14:10. Llega caminando a urgencias, acompañado por su hija, un <strong>hombre de 62 años</strong>. Desde hace unos 45 minutos tiene una molestia retroesternal que describe como una presión, intensidad 8/10, que empezó mientras caminaba y no cedió al detenerse. Está sudoroso, pálido, con náuseas y sensación de debilidad.</p>
+  <p>Antecedentes: hipertensión de 8 años, dislipidemia, fuma 15 cigarrillos al día, sedentario. Su padre tuvo un infarto. Nunca había tenido un episodio de esta intensidad.</p>
+  <p class="said">«Doctor, esto no se me quita».</p>`,
+  steps:[
+    {
+      stem:'Usted es el primer médico que lo ve. Son las 14:12. ¿Qué ordena primero?',
+      opts:[
+        {k:'A', t:'Electrocardiograma de 12 derivaciones ahora mismo, monitorización continua, acceso venoso y toma de constantes seriadas.',
+         v:'good', cost:3,
+         fb:`<p>Correcto, y la palabra que importa es <strong>ahora</strong>. En todo paciente con sospecha de síndrome coronario agudo el ECG de 12 derivaciones debe realizarse e <strong>interpretarse dentro de los primeros 10 minutos del primer contacto médico</strong>. No es un examen complementario: es el estudio que decide si este paciente necesita una sala de hemodinamia en la próxima hora.</p>
+         <p>El ECG obtenido y no leído por alguien competente en los primeros 10 minutos equivale a no haberlo hecho.</p>`,
+         src:'ESC 2023, síndromes coronarios agudos: ECG en menos de 10 minutos desde el primer contacto médico.'},
+        {k:'B', t:'Solicitar troponina de alta sensibilidad y esperar el resultado antes de tomar cualquier decisión.',
+         v:'bad', cost:38,
+         fb:`<p>Esta es la trampa más costosa del caso, y la más frecuente en la vida real. La troponina informa sobre <em>lesión miocárdica</em>, no sobre <em>oclusión coronaria</em>. En un paciente con 45 minutos de dolor la troponina puede todavía estar por debajo del percentil 99, y el músculo se está muriendo mientras usted espera el reporte del laboratorio.</p>
+         <p>La Quinta Definición Universal es explícita: en el paciente con elevación del ST el diagnóstico de trabajo se establece con la clínica y el ECG. La lesión miocárdica aguda confirma después el diagnóstico final, <strong>pero nunca debe retrasar la reperfusión</strong>.</p>`,
+         src:'Quinta Definición Universal del IM (2026), vía diagnóstica del infarto primario.'},
+        {k:'C', t:'Radiografía de tórax portátil para descartar otras causas de dolor torácico antes de continuar.',
+         v:'bad', cost:26,
+         fb:`<p>El diagnóstico diferencial del dolor torácico importa, pero el orden importa más. La radiografía no descarta una oclusión coronaria y consume minutos irrecuperables. Se solicita después de haber descartado o confirmado la emergencia que mata en minutos.</p>`,
+         src:'Prioridad clínica: primero la condición con mayor riesgo inmediato de muerte.'},
+        {k:'D', t:'Analgesia, observación 30 minutos y reevaluar si el dolor persiste.',
+         v:'bad', cost:45, deteriora:true,
+         fb:`<p>Insegura. Se ha sedado el síntoma sin evaluar la causa. A los 30 minutos el paciente refiere dolor 9/10, aparece bradicardia sinusal y la presión arterial cae a 96/58 mmHg.</p>
+         <p>La analgesia enmascara el marcador clínico más útil de que la isquemia continúa.</p>`,
+         src:'La resolución del dolor con analgésicos no tiene valor diagnóstico.'}
+      ]
+    },
+    {
+      stem:'14:15. Este es el trazado. Antes de nombrar el diagnóstico: ¿qué está viendo?',
+      ecg:'stemi_inferior',
+      ecgCap:'ECG de 12 derivaciones, 14:15 h. Tira de ritmo en DII.',
+      opts:[
+        {k:'A', t:'Elevación del segmento ST en DII, DIII y aVF, con descenso recíproco en DI y aVL.',
+         v:'good', cost:2,
+         fb:`<p>Exacto, y las dos mitades de la frase valen lo mismo. La elevación en las tres derivaciones inferiores contiguas define el territorio. El <strong>descenso recíproco en DI y aVL</strong> es lo que le da seguridad diagnóstica: la elevación regional acompañada de cambios recíprocos habla de oclusión coronaria; la elevación difusa sin reciprocidad orienta a pericarditis o repolarización precoz.</p>
+         <p>Observe además que DIII muestra más elevación que DII, lo que sugiere que la arteria responsable es la coronaria derecha y no la circunfleja.</p>`,
+         src:'Quinta Definición Universal del IM (2026), hallazgos electrocardiográficos de isquemia e infarto.'},
+        {k:'B', t:'Elevación del ST en las derivaciones inferiores, sin otros hallazgos relevantes.',
+         v:'mid', cost:4,
+         fb:`<p>Identificó lo esencial, pero se dejó la mitad del trazado. Vuelva a mirar <strong>DI y aVL</strong>: hay descenso del ST y T negativa. Ese cambio recíproco es el que distingue una oclusión coronaria de las otras causas de elevación del ST, y su ausencia debería haberle hecho dudar del diagnóstico.</p>`,
+         src:'Los cambios recíprocos aumentan la especificidad de la elevación del ST.'},
+        {k:'C', t:'Elevación difusa del ST en casi todas las derivaciones, compatible con pericarditis aguda.',
+         v:'bad', cost:20,
+         fb:`<p>Revise el patrón espacial. La elevación aquí está <strong>confinada a un territorio</strong> (inferior) y se acompaña de descenso especular en el territorio opuesto. En la pericarditis la elevación es difusa, cóncava, sin reciprocidad, y suele haber descenso del PR.</p>
+         <p>Este error, en este paciente, significa no activar la reperfusión.</p>`,
+         src:'Diagnóstico diferencial de la elevación del ST.'},
+        {k:'D', t:'El ST está elevado menos de 2 mm, así que no cumple criterios y debo esperar el segundo ECG.',
+         v:'bad', cost:22,
+         fb:`<p>Mida de nuevo en el punto J. El umbral en derivaciones distintas de V2-V3 es de <strong>1 mm</strong> en dos derivaciones contiguas; el umbral de 2 a 2,5 mm aplica solo a V2-V3 y varía según sexo y edad. Aquí la elevación inferior supera con holgura el criterio.</p>
+         <p>Repetir el ECG es correcto cuando el trazado es dudoso, no cuando ya es diagnóstico.</p>`,
+         src:'Quinta Definición Universal del IM (2026), umbrales de elevación del punto J.'}
+      ]
+    },
+    {
+      stem:'Diagnóstico de trabajo: infarto con elevación del ST de cara inferior. ¿Qué derivaciones adicionales toma antes de medicar?',
+      opts:[
+        {k:'A', t:'Derivaciones derechas V3R-V4R y posteriores V7-V9.',
+         v:'good', cost:3,
+         fb:`<p>Sí, y en el infarto inferior esto cambia la conducta farmacológica. Hasta la mitad de los infartos inferiores comprometen el ventrículo derecho: la elevación en V3R-V4R (y la elevación en aVR acompañante) identifica un ventrículo derecho dependiente de precarga.</p>
+         <p>Consecuencia práctica inmediata: <strong>nitratos y otros venodilatadores pueden producir hipotensión grave</strong>. Las derivaciones posteriores completan el mapa hacia la cara lateral y posterior.</p>`,
+         src:'Quinta Definición Universal del IM (2026), infarto del ventrículo derecho y posterior.'},
+        {k:'B', t:'Ninguna. El diagnóstico ya está hecho y cualquier demora es perjudicial.',
+         v:'mid', cost:5,
+         fb:`<p>La prioridad está bien puesta y no ha cometido un error grave: la reperfusión manda. Pero las derivaciones derechas cuestan menos de dos minutos y modifican qué fármacos puede usar con seguridad en los próximos diez.</p>
+         <p>Regla operativa: en todo infarto inferior, V3R-V4R antes de administrar nitroglicerina.</p>`,
+         src:'ESC 2023: derivaciones adicionales en el infarto inferior.'},
+        {k:'C', t:'Repetir el ECG estándar cada 10 minutos hasta ver evolución.',
+         v:'bad', cost:16,
+         fb:`<p>El ECG seriado es la herramienta correcta para el paciente con trazado <em>no diagnóstico</em> y dolor persistente. Aquí el trazado ya es diagnóstico: repetirlo no aporta y consume la ventana de reperfusión.</p>`,
+         src:'ECG seriado: indicado ante trazado no diagnóstico o cambio clínico.'}
+      ]
+    },
+    {
+      stem:'V4R muestra elevación de 1,5 mm. PA 132/80, FC 98. ¿Cuál es su esquema farmacológico inicial?',
+      opts:[
+        {k:'A', t:'Ácido acetilsalicílico 150-300 mg masticado, anticoagulación parenteral, analgesia con opioide titulado si el dolor persiste; sin nitratos por ahora; oxígeno solo si la saturación cae por debajo de 90%.',
+         v:'good', cost:4,
+         fb:`<p>Correcto en los cuatro puntos. La aspirina se administra a dosis de carga de 150 a 300 mg por vía oral. La anticoagulación parenteral acompaña a la estrategia de reperfusión elegida. Los nitratos se evitan con compromiso del ventrículo derecho y ante presión limítrofe.</p>
+         <p>Y una corrección de hábito: <strong>el oxígeno no es un analgésico ni un tratamiento de la isquemia</strong>. En pacientes sin hipoxemia (saturación por encima de 90%) el oxígeno suplementario no aporta beneficio.</p>`,
+         src:'ESC 2023: aspirina 150-300 mg de carga; oxígeno solo si saturación menor de 90%.'},
+        {k:'B', t:'Aspirina, nitroglicerina sublingual y luego en infusión para controlar el dolor y la presión, más anticoagulación.',
+         v:'bad', cost:14, deteriora:true,
+         fb:`<p>A los tres minutos de la segunda dosis sublingual la presión cae a 78/44 mmHg y el paciente se torna confuso. Este es un infarto inferior <strong>con compromiso del ventrículo derecho</strong>: el gasto cardíaco depende de la precarga, y usted acaba de retirarla.</p>
+         <p>Manejo: suspender el nitrato, elevar las piernas, cargar volumen con cristaloides y evitar diuréticos. La lección se aprende mejor aquí que en la sala de urgencias.</p>`,
+         src:'Infarto del ventrículo derecho: dependencia de precarga, evitar venodilatadores.'},
+        {k:'C', t:'Aspirina, anticoagulación y oxígeno por cánula nasal a 4 L/min de forma rutinaria.',
+         v:'mid', cost:6,
+         fb:`<p>Las dos primeras medidas son correctas. El oxígeno rutinario en el paciente no hipoxémico no ha demostrado beneficio y existe señal de posible daño por vasoconstricción coronaria e incremento del estrés oxidativo. Este paciente satura 94%: no requiere oxígeno.</p>`,
+         src:'ESC 2023: oxígeno indicado con saturación menor de 90%.'},
+        {k:'D', t:'Aspirina, doble antiagregación con inhibidor potente de P2Y12 en dosis de carga inmediata, anticoagulación y nitratos.',
+         v:'mid', cost:9,
+         fb:`<p>La aspirina y la anticoagulación son correctas; los nitratos, no, por el compromiso del ventrículo derecho. Sobre el segundo antiagregante hay un matiz que conviene conocer: en el paciente que va a angioplastia primaria, el <strong>pretratamiento con inhibidor de P2Y12 antes de conocer la anatomía pasó a ser una consideración opcional</strong> y no una recomendación fuerte. La decisión razonable es coordinarla con el equipo que hará el procedimiento.</p>`,
+         src:'ESC 2023: el pretratamiento con P2Y12 en angioplastia primaria puede considerarse (recomendación débil).'}
+      ]
+    },
+    {
+      stem:'14:22. Usted está en un hospital sin sala de hemodinamia. El centro con angioplastia primaria más cercano está a 150 minutos de traslado confirmados. No hay contraindicaciones para fibrinólisis. ¿Qué hace?',
+      opts:[
+        {k:'A', t:'Fibrinólisis inmediata, con el objetivo de administrar el bolo en menos de 10 minutos desde el diagnóstico, y traslado inmediato al centro con hemodinamia después de administrarla.',
+         v:'good', cost:8,
+         fb:`<p>Esta es la decisión correcta y es la que más vidas salva en el mundo real colombiano. La angioplastia primaria es la estrategia de elección <strong>solo si puede realizarse dentro de los 120 minutos desde el diagnóstico</strong>. Cuando ese tiempo no es alcanzable, la fibrinólisis pasa al frente, con un objetivo de menos de 10 minutos entre el diagnóstico y el bolo.</p>
+         <p>Y no termina ahí: <strong>el paciente se traslada de todos modos</strong>, para angiografía posterior. La fibrinólisis no es un destino, es un puente.</p>`,
+         src:'ESC 2023: angioplastia primaria si es posible en menos de 120 min; si no, fibrinólisis en menos de 10 min y traslado.'},
+        {k:'B', t:'Traslado inmediato para angioplastia primaria, sin fibrinólisis, porque la angioplastia siempre es superior.',
+         v:'bad', cost:150, deteriora:true,
+         fb:`<p>La superioridad de la angioplastia primaria depende del tiempo. Con 150 minutos de traslado, el paciente llegará con más de tres horas de oclusión y el beneficio de la angioplastia sobre la fibrinólisis se pierde.</p>
+         <p>Durante el traslado presenta taquicardia ventricular sostenida que requiere cardioversión. El reloj no se detiene por la elegancia del procedimiento.</p>`,
+         src:'ESC 2023: el umbral de 120 minutos define la elección de la estrategia de reperfusión.'},
+        {k:'C', t:'Esperar el resultado de la troponina para confirmar el infarto antes de administrar el fibrinolítico.',
+         v:'bad', cost:40, deteriora:true,
+         fb:`<p>No. En el infarto con elevación del ST la reperfusión se activa con la clínica y el ECG. La troponina confirmará después la lesión miocárdica aguda y con ello el diagnóstico final, pero <strong>esperarla equivale a decidir que el músculo se pierda</strong>.</p>`,
+         src:'Quinta Definición Universal del IM (2026): la confirmación biomarcadora no debe retrasar la reperfusión.'},
+        {k:'D', t:'Manejo médico con anticoagulación y antiagregación, y angiografía electiva en las próximas 48 horas.',
+         v:'bad', cost:120, deteriora:true,
+         fb:`<p>Es la única conducta de la lista que no ofrece reperfusión. En una oclusión coronaria aguda esto se traduce en infarto transmural, disfunción ventricular y una mortalidad que la reperfusión oportuna habría evitado.</p>`,
+         src:'La reperfusión es la intervención que modifica el pronóstico en el IAMCEST.'}
+      ]
+    },
+    {
+      stem:'Se administró el fibrinolítico a las 14:30. A los 75 minutos: dolor 1/10 y el ST descendió más del 50% respecto del trazado inicial. La troponina inicial resultó elevada. ¿Cuál es la conducta y cuál el diagnóstico final?',
+      opts:[
+        {k:'A', t:'Criterios de reperfusión cumplidos. Traslado para angiografía entre 2 y 24 horas. Diagnóstico final: infarto primario con elevación del ST.',
+         v:'good', cost:5,
+         fb:`<p>Correcto. La resolución del ST mayor al 50% junto con el alivio del dolor sugiere reperfusión exitosa, y aun así la angiografía dentro de las 2 a 24 horas siguientes forma parte de la estrategia farmacoinvasiva.</p>
+         <p>Sobre la nomenclatura: en la Quinta Definición Universal este cuadro se denomina <strong>infarto primario</strong>, es decir, el que se produce de forma espontánea por una patología coronaria aguda. La etiqueta «tipo 1» desapareció. Si la angiografía confirma aterotrombosis, ese es el mecanismo que se registra.</p>`,
+         src:'Quinta Definición Universal del IM (2026): clasificación clínica en infarto primario, secundario y relacionado con procedimiento.'},
+        {k:'B', t:'Reperfusión exitosa. Alta a las 24 horas si permanece asintomático, con seguimiento ambulatorio.',
+         v:'bad', cost:10,
+         fb:`<p>No. La fibrinólisis exitosa no exime de la angiografía: la estrategia farmacoinvasiva contempla el cateterismo entre 2 y 24 horas para definir la anatomía y tratar la lesión responsable.</p>`,
+         src:'ESC 2023: angiografía 2-24 h tras fibrinólisis exitosa.'},
+        {k:'C', t:'Angiografía de rescate inmediata, porque todo paciente fibrinolizado debe ir a la sala en la primera hora.',
+         v:'mid', cost:8,
+         fb:`<p>La angiografía de rescate <strong>inmediata</strong> se reserva para la fibrinólisis fallida: dolor persistente y resolución del ST menor al 50% a los 60-90 minutos, o inestabilidad hemodinámica o eléctrica. Este paciente cumple criterios de reperfusión, por lo que corresponde la ventana de 2 a 24 horas.</p>`,
+         src:'ESC 2023: angiografía de rescate ante fibrinólisis fallida.'}
+      ]
+    }
+  ],
+  cierre:`<p>Este paciente llegó a las 14:10 y recibió el fibrinolítico a las 14:30. Veinte minutos. Ese número, y no el diagnóstico, es lo que evaluamos hoy.</p>
+  <p>El aprendizaje central del caso: <strong>reconocer el patrón electrocardiográfico y activar la reperfusión sin esperar el laboratorio</strong>. Todas las decisiones costosas del caso tuvieron la misma forma: buscar más certeza cuando ya había suficiente para actuar.</p>`,
+  docente:`<h4>Para el debriefing del caso 1</h4>
+  <ul><li>¿En qué momento tuvieron suficiente información para activar la reperfusión? ¿Qué pidieron después de ese momento?</li>
+  <li>¿Quién eligió esperar la troponina? Explorar el razonamiento sin señalar el error: casi siempre es «quería estar seguro».</li>
+  <li>Contraste explícito: la troponina define <em>lesión miocárdica</em>; el ECG define <em>oclusión</em>. Solo una de las dos tiene reloj.</li>
+  <li>Preguntar por el contexto local: ¿cuál es el tiempo real de traslado desde su sitio de rotación al centro con hemodinamia?</li></ul>`
+},
+
+/* ================= CASO 2 ================= */
+{
+  id:'c2',
+  titulo:'Una mujer de 58 años que no dice «dolor de pecho»',
+  subtitulo:'Presentación no clásica, ECG sin elevación del ST y una troponina que depende del umbral que usted elija.',
+  vitals:{fc:96, pa:'146/88', spo2:92, fr:24, ritmo:'Sinusal'},
+  clock:0,
+  intro:`<p>Consulta una <strong>mujer de 58 años</strong> con hipertensión y diabetes tipo 2. Desde hace unas 2 horas tiene malestar general, disnea, náuseas y una sensación de presión en la parte alta del abdomen. Refiere que desde la mañana se siente más cansada de lo habitual y ha tenido sudoración fría. <strong>No describe dolor torácico intenso.</strong></p>
+  <p>Su esposo cuenta que la vio pálida y decidió traerla. Otros antecedentes: dislipidemia, sedentarismo, antecedente familiar de enfermedad cardiovascular. La molestia epigástrica comenzó después de un esfuerzo físico y luego apareció la disnea.</p>
+  <p class="said">«No es dolor, doctor, es como un peso aquí arriba del estómago. Se me quita si me quedo quieta».</p>`,
+  steps:[
+    {
+      stem:'La paciente lleva 40 minutos en la sala de espera con la impresión de triage «dolor abdominal». ¿Cuál es su primera acción?',
+      opts:[
+        {k:'A', t:'Reclasificar el triage y realizar ECG de 12 derivaciones de inmediato, con monitorización.',
+         v:'good', cost:3,
+         fb:`<p>Correcto. Los síntomas equivalentes anginosos (disnea, epigastralgia, náuseas, fatiga desproporcionada, sudoración fría) tienen suficiente peso en una mujer de 58 años con diabetes e hipertensión para activar la vía de dolor torácico.</p>
+         <p>Un apunte importante de la Quinta Definición Universal: se <strong>desaconseja el uso de las etiquetas «típico» y «atípico»</strong>. Los síntomas rotulados como atípicos son más frecuentes en mujeres evaluadas por infarto y esa etiqueta contribuye al retraso diagnóstico. Prefiera describir el síntoma.</p>`,
+         src:'Quinta Definición Universal del IM (2026), síntomas del infarto: se desaconsejan los términos típico y atípico.'},
+        {k:'B', t:'Solicitar ecografía abdominal y enzimas hepáticas para estudiar la epigastralgia.',
+         v:'bad', cost:35, deteriora:true,
+         fb:`<p>Este es el error que más muertes evitables produce en mujeres con síndrome coronario. La epigastralgia con disnea, náuseas y diaforesis en una diabética de 58 años es un síndrome coronario hasta que se demuestre lo contrario.</p>
+         <p>Mientras espera la ecografía la paciente refiere aumento de la disnea y su saturación cae a 90%.</p>`,
+         src:'El infarto sin dolor torácico se diagnostica más tarde y tiene mayor mortalidad hospitalaria.'},
+        {k:'C', t:'Administrar antiácido y un procinético, y reevaluar en una hora.',
+         v:'bad', cost:50, deteriora:true,
+         fb:`<p>Insegura. La mejoría o no del síntoma con antiácidos <strong>no tiene valor para descartar isquemia</strong>. Una hora después la paciente presenta disnea progresiva y aparecen crepitantes bibasales.</p>`,
+         src:'La respuesta a antiácidos no discrimina entre causa digestiva y coronaria.'},
+        {k:'D', t:'ECG solo si la paciente refiere dolor torácico al reinterrogarla dirigidamente.',
+         v:'mid', cost:12,
+         fb:`<p>Reinterrogar está bien, condicionar el ECG a la respuesta no. El ECG cuesta minutos y no tiene riesgo; la ausencia de dolor torácico no reduce lo suficiente la probabilidad como para omitirlo en este perfil de riesgo.</p>`,
+         src:'El dolor torácico es sensible pero no está presente en todos los infartos.'}
+      ]
+    },
+    {
+      stem:'Este es el ECG. ¿Qué reconoce y qué significa?',
+      ecg:'wellens_a',
+      ecgCap:'ECG de 12 derivaciones. Obsérvense V2 y V3.',
+      opts:[
+        {k:'A', t:'Ondas T bifásicas en V2-V3 sin elevación del ST ni ondas Q: patrón de Wellens, que indica estenosis crítica de la descendente anterior proximal.',
+         v:'good', cost:3,
+         fb:`<p>Muy bien. El patrón de Wellens consiste en ondas T bifásicas (tipo A) o profundamente invertidas y simétricas (tipo B) en V2-V3, <strong>en el paciente sin dolor en el momento del registro</strong>, con progresión normal de la onda R y sin ondas Q. Traduce una estenosis crítica de la descendente anterior proximal con miocardio todavía viable.</p>
+         <p>Es un patrón de alto riesgo, no de tranquilidad: anuncia un infarto anterior extenso si la lesión no se trata.</p>`,
+         src:'Quinta Definición Universal del IM (2026), patrones sugestivos de oclusión coronaria aguda.'},
+        {k:'B', t:'ECG sin elevación del ST: no hay criterios de infarto, se puede continuar el estudio ambulatorio.',
+         v:'bad', cost:30, deteriora:true,
+         fb:`<p>La ausencia de elevación del ST <strong>no descarta un síndrome coronario agudo ni una oclusión coronaria</strong>. Hasta uno de cada cuatro pacientes manejados como infarto sin elevación del ST tiene una oclusión del vaso responsable en la angiografía.</p>
+         <p>En este trazado hay un patrón definido y nombrado. Cuarenta minutos después la paciente presenta dolor torácico opresivo y nuevos cambios dinámicos.</p>`,
+         src:'Quinta Definición Universal del IM (2026): hasta 1 de cada 4 casos manejados como NSTEMI presenta oclusión del vaso culpable.'},
+        {k:'C', t:'Descenso del ST de ascenso rectilíneo con ondas T altas y simétricas: patrón de De Winter.',
+         v:'mid', cost:6,
+         fb:`<p>Confunde dos patrones que conviene separar bien, porque tienen urgencias distintas.</p>
+         <p><strong>De Winter</strong>: descenso del ST de ascenso rectilíneo en el punto J con ondas T <em>altas, positivas y simétricas</em> en las precordiales, habitualmente con el paciente <em>con dolor</em>. Equivale a oclusión aguda de la descendente anterior y exige reperfusión inmediata.</p>
+         <p><strong>Wellens</strong> (lo que ve aquí): T bifásicas o invertidas, con el paciente <em>sin dolor</em>, arteria permeable con estenosis crítica. Requiere estrategia invasiva, no trombólisis.</p>`,
+         src:'Diferenciación entre los patrones de De Winter y de Wellens.'},
+        {k:'D', t:'Cambios inespecíficos de la repolarización, probablemente por hipertrofia ventricular izquierda.',
+         v:'bad', cost:26,
+         fb:`<p>La hipertrofia produce descenso del ST y T asimétricas en derivaciones con voltajes altos (V5-V6, DI, aVL), con la rama descendente rápida. Aquí los cambios están en V2-V3, son simétricos y no hay criterios de voltaje. Etiquetar como «inespecífico» un patrón nombrado es la forma más común de perder una descendente anterior crítica.</p>`,
+         src:'Diagnóstico diferencial de las alteraciones de la onda T en precordiales derechas.'}
+      ]
+    },
+    {
+      stem:'Llega la primera troponina T de alta sensibilidad, tomada a las 2 horas del inicio. El laboratorio informa: <strong>22 ng/L</strong>, con la nota «percentil 99 del ensayo: 26 ng/L (valor uniforme)». ¿Cómo interpreta este resultado?',
+      labs:[
+        ['Troponina de alta sensibilidad, 0 h','22 ng/L','hi'],
+        ['Percentil 99, umbral uniforme','26 ng/L',''],
+        ['Percentil 99, umbral específico para mujeres','16 ng/L',''],
+        ['Percentil 99, umbral específico para hombres','34 ng/L',''],
+        ['Creatinina','0,8 mg/dL','ok'],
+        ['Glucemia','218 mg/dL','hi'],
+        ['Hemoglobina','13,4 g/dL','ok']
+      ],
+      opts:[
+        {k:'A', t:'El valor está por encima del percentil 99 específico para mujeres: hay lesión miocárdica. Debo tomar una segunda troponina y continuar el algoritmo.',
+         v:'good', cost:4,
+         fb:`<p>Este es el punto más importante del taller. La Quinta Definición Universal establece que la lesión miocárdica se define con el <strong>percentil 99 específico por sexo</strong>, precisamente para evitar el sesgo sistemático y el subdiagnóstico del infarto en mujeres.</p>
+         <p>Con el umbral uniforme de 26 ng/L, esta paciente sería «normal». Con su umbral real de 16 ng/L, tiene lesión miocárdica. El mismo número, dos conclusiones opuestas, y una de ellas la manda a la casa.</p>
+         <p>Pregunte en su laboratorio si informa umbrales por sexo. Muchos todavía no lo hacen.</p>`,
+         src:'Quinta Definición Universal del IM (2026): umbrales del percentil 99 específicos por sexo para definir lesión miocárdica.'},
+        {k:'B', t:'Está por debajo del percentil 99 del ensayo: la troponina es negativa y descarta infarto.',
+         v:'bad', cost:32, deteriora:true,
+         fb:`<p>Dos errores en una frase. El primero: el umbral aplicable a esta paciente es el <strong>específico para mujeres</strong> (16 ng/L), y 22 lo supera. El segundo: una sola troponina nunca descarta infarto en un paciente con dolor de 2 horas de evolución, porque la curva puede no haber ascendido todavía.</p>
+         <p>Se le da salida. Regresa 6 horas después con infarto anterior extenso y fracción de eyección del 32%.</p>`,
+         src:'Quinta Definición Universal del IM (2026): en presentaciones tempranas es necesaria la medición seriada.'},
+        {k:'C', t:'La troponina está elevada, luego la paciente tiene un infarto y debo activar la reperfusión.',
+         v:'mid', cost:9,
+         fb:`<p>Va demasiado rápido en la dirección contraria. Una troponina por encima del percentil 99 define <strong>lesión miocárdica</strong>, no infarto. El infarto exige además evidencia de isquemia: síntomas, cambios electrocardiográficos nuevos, ondas Q patológicas, o hallazgos en imagen.</p>
+         <p>Aquí sí hay contexto isquémico, de modo que la sospecha es alta, pero el razonamiento debe hacerse en dos pasos: primero lesión, después mecanismo. Y esta paciente no tiene indicación de fibrinólisis.</p>`,
+         src:'Quinta Definición Universal del IM (2026): lesión miocárdica aguda frente a infarto de miocardio.'},
+        {k:'D', t:'Es una elevación mínima, probablemente por la diabetes: repetir en 6 horas.',
+         v:'bad', cost:28,
+         fb:`<p>Atribuir la elevación a una comorbilidad sin evaluar el contexto es un atajo peligroso. Además, el intervalo correcto no es de 6 horas: los algoritmos validados usan intervalos fijos de <strong>1 o 2 horas</strong>, que es lo que permite una decisión temprana y segura.</p>`,
+         src:'ESC 2023: algoritmos 0 h/1 h (preferido) y 0 h/2 h.'}
+      ]
+    },
+    {
+      stem:'Segunda troponina a la hora: <strong>41 ng/L</strong>. La paciente reaparece con dolor torácico opresivo y se documentan nuevos descensos dinámicos del ST en el monitor. ¿Cómo clasifica el riesgo y qué estrategia indica?',
+      labs:[
+        ['Troponina de alta sensibilidad, 0 h','22 ng/L','hi'],
+        ['Troponina de alta sensibilidad, 1 h','41 ng/L','hi'],
+        ['Delta a 1 hora','+19 ng/L','hi']
+      ],
+      opts:[
+        {k:'A', t:'Criterios de muy alto riesgo por dolor recurrente refractario y cambios dinámicos del ST: estrategia invasiva inmediata.',
+         v:'good', cost:5,
+         fb:`<p>Correcto. Los criterios de muy alto riesgo que obligan a angiografía inmediata son: <strong>inestabilidad hemodinámica o choque cardiogénico; dolor torácico recurrente o refractario al tratamiento médico; insuficiencia cardíaca aguda atribuible a isquemia; arritmias que amenazan la vida o paro cardíaco; complicaciones mecánicas; y cambios electrocardiográficos dinámicos recurrentes, en especial elevación intermitente del ST.</strong></p>
+         <p>Esta paciente cumple dos. El ascenso de la troponina con delta significativo confirma además la lesión miocárdica aguda.</p>`,
+         src:'ESC 2023: criterios de muy alto riesgo en SCA sin elevación del ST y estrategia invasiva inmediata.'},
+        {k:'B', t:'Alto riesgo por infarto sin elevación del ST confirmado: estrategia invasiva temprana dentro de las primeras 24 horas.',
+         v:'mid', cost:11,
+         fb:`<p>Habría sido la respuesta correcta hace treinta minutos. El diagnóstico confirmado de infarto sin elevación del ST y una puntuación GRACE mayor de 140 sitúan al paciente en categoría de <strong>alto riesgo</strong>, con estrategia invasiva dentro de 24 horas.</p>
+         <p>Pero la aparición de <strong>dolor recurrente con cambios dinámicos del ST</strong> reclasifica a la paciente hacia muy alto riesgo. La estratificación no es un acto único: se repite cada vez que el paciente cambia.</p>`,
+         src:'ESC 2023: criterios de alto riesgo y ventana de 24 horas frente a criterios de muy alto riesgo.'},
+        {k:'C', t:'Prueba de esfuerzo para documentar isquemia inducible antes de decidir la estrategia invasiva.',
+         v:'bad', cost:40, deteriora:true,
+         fb:`<p>Contraindicada, y peligrosa en este contexto. Una prueba de esfuerzo en una paciente con patrón de Wellens, troponina en ascenso y dolor recurrente puede precipitar la oclusión de una descendente anterior críticamente estenosada.</p>
+         <p>Las pruebas no invasivas tienen su lugar en el paciente con sospecha de síndrome coronario, troponina no elevada, ECG sin cambios y sin recurrencia del dolor. No es el caso.</p>`,
+         src:'ESC 2023: las pruebas no invasivas se consideran ante troponina no elevada, sin cambios en el ECG y sin recurrencia del dolor.'},
+        {k:'D', t:'Manejo médico intensivo y reevaluación en 48-72 horas según evolución.',
+         v:'bad', cost:60, deteriora:true,
+         fb:`<p>No. Ante isquemia activa con cambios dinámicos el manejo conservador expone a la paciente a un infarto anterior extenso. La estrategia invasiva no es una escalada opcional aquí: es el tratamiento.</p>`,
+         src:'ESC 2023: estrategia invasiva inmediata ante criterios de muy alto riesgo.'}
+      ]
+    },
+    {
+      stem:'La angiografía muestra estenosis del 95% en la descendente anterior proximal, con imagen de trombo mural y rotura de placa en la tomografía de coherencia óptica. ¿Cuál es el diagnóstico final según la nomenclatura vigente?',
+      opts:[
+        {k:'A', t:'Infarto primario sin elevación del ST, por aterotrombosis.',
+         v:'good', cost:2,
+         fb:`<p>Correcto y completo. La Quinta Definición Universal pide que el diagnóstico final indique <strong>el escenario clínico</strong> (primario) y, cuando la angiografía lo permite, <strong>el mecanismo coronario</strong> (aterotrombosis). La clasificación electrocardiográfica en «con» o «sin» elevación del ST se conserva porque orienta la conducta inmediata.</p>
+         <p>El infarto primario ya no se limita a la aterotrombosis: incluye también disección coronaria espontánea, embolia coronaria, vasoespasmo, y reestenosis, trombosis del stent o falla del injerto ocurridas más de 30 días después de una revascularización.</p>`,
+         src:'Quinta Definición Universal del IM (2026): criterios diagnósticos del infarto primario y sus mecanismos.'},
+        {k:'B', t:'Infarto de miocardio tipo 1.',
+         v:'mid', cost:3,
+         fb:`<p>El concepto es el correcto, la etiqueta ya no. La <strong>clasificación numérica (tipos 1, 2, 3, 4a, 4b, 4c y 5) fue reemplazada</strong> por una clasificación clínica de tres escenarios: primario, secundario y relacionado con procedimiento.</p>
+         <p>El motivo del cambio es práctico: los términos numéricos no comunicaban el mecanismo ni al paciente ni al clínico, y se aplicaban de forma inconsistente.</p>`,
+         src:'Quinta Definición Universal del IM (2026): sustitución de la clasificación numérica.'},
+        {k:'C', t:'Infarto secundario, porque la paciente tiene diabetes e hipertensión que aumentan la demanda de oxígeno.',
+         v:'bad', cost:5,
+         fb:`<p>Confusión conceptual importante. El infarto <strong>secundario</strong> requiere una <em>condición aguda alternativa</em> que genere desequilibrio entre aporte y demanda de oxígeno: taquiarritmia, sepsis, anemia grave, hipotensión, crisis hipertensiva, hipoxemia.</p>
+         <p>Los factores de riesgo crónicos no son condiciones agudas desencadenantes. Aquí hay una rotura de placa con trombo: es un infarto primario.</p>`,
+         src:'Quinta Definición Universal del IM (2026): criterios diagnósticos del infarto secundario.'}
+      ]
+    }
+  ],
+  cierre:`<p>Dos elementos definieron este caso, y ninguno era el dolor torácico.</p>
+  <p>El primero: un ECG sin elevación del ST puede contener un patrón de altísimo riesgo. El segundo: <strong>una troponina de 22 ng/L es normal en un hombre y anormal en esta mujer</strong>. El umbral específico por sexo es una de las razones por las que la Quinta Definición Universal existe.</p>`,
+  docente:`<h4>Para el debriefing del caso 2</h4>
+  <ul><li>Preguntar directamente: ¿cuántos habrían dado salida con la primera troponina? Es el punto de mayor aprendizaje del taller.</li>
+  <li>Verificar con el grupo si el laboratorio de su hospital reporta umbrales por sexo. Si no lo hace, ¿qué pueden hacer al respecto?</li>
+  <li>Contrastar Wellens con De Winter en el tablero: paciente sin dolor frente a paciente con dolor; estrategia invasiva frente a reperfusión inmediata.</li>
+  <li>Nombrar el sesgo: la etiqueta «atípico» retrasa el diagnóstico en mujeres. Pedirles que describan el síntoma en lugar de clasificarlo.</li></ul>`
+},
+
+/* ================= CASO 3 ================= */
+{
+  id:'c3',
+  titulo:'Un hombre de 74 años con neumonía y troponina de 180',
+  subtitulo:'El caso que separa lesión miocárdica de infarto, y el infarto primario del secundario.',
+  vitals:{fc:152, pa:'92/56', spo2:88, fr:30, ritmo:'FA rápida'},
+  clock:0,
+  intro:`<p>Está hospitalizado en piso un <strong>hombre de 74 años</strong> con neumonía adquirida en la comunidad, día 2 de antibiótico. Lo llaman porque está taquicárdico y con dificultad respiratoria.</p>
+  <p>Al examen: febril 38,8 °C, fibrilación auricular con respuesta ventricular de 152 lpm, presión arterial 92/56 mmHg, saturación 88% con cánula nasal a 3 L/min, crepitantes en base derecha. Refiere «opresión en el pecho» cuando se le pregunta dirigidamente, pero está más pendiente de la falta de aire.</p>
+  <p>Antecedentes: hipertensión, enfermedad renal crónica estadio 3, exfumador. Nunca ha tenido cateterismo.</p>`,
+  steps:[
+    {
+      stem:'Solicita ECG y troponina. Troponina de alta sensibilidad: 180 ng/L (percentil 99 para hombres: 34 ng/L). Antes de mirar el ECG, ¿qué afirma este resultado?',
+      opts:[
+        {k:'A', t:'Que hay lesión miocárdica. Todavía no sé si es aguda ni si su mecanismo es isquémico.',
+         v:'good', cost:2,
+         fb:`<p>Exactamente. Una troponina por encima del percentil 99 específico por sexo define <strong>lesión miocárdica</strong>, sin más. Para llamarla <em>aguda</em> hace falta demostrar un patrón de ascenso o descenso en mediciones seriadas; si dos o más valores permanecen elevados de forma estable en un contexto clínico estable, se trata de <strong>lesión miocárdica crónica</strong>.</p>
+         <p>Y aun siendo aguda, el mecanismo puede ser isquémico o no isquémico: inflamación, estrés hemodinámico, estrés catecolaminérgico, toxicidad, trauma. Este paciente con enfermedad renal crónica probablemente tenga además un componente basal elevado.</p>`,
+         src:'Quinta Definición Universal del IM (2026): criterios de lesión miocárdica aguda y crónica.'},
+        {k:'B', t:'Que el paciente tiene un infarto agudo de miocardio y debe ir a hemodinamia.',
+         v:'bad', cost:20,
+         fb:`<p>Este es el sobrediagnóstico que la Quinta Definición Universal quiere corregir. La elevación de troponina es frecuentísima en el paciente agudamente enfermo: sepsis, insuficiencia cardíaca, embolia pulmonar, arritmias, enfermedad renal, ictus.</p>
+         <p>Llamar «infarto» a toda troponina elevada lleva a angiografías innecesarias, anticoagulación en pacientes que sangran y, sobre todo, a <strong>no tratar la causa real</strong>.</p>`,
+         src:'Quinta Definición Universal del IM (2026): mecanismos de lesión miocárdica aguda no isquémica.'},
+        {k:'C', t:'Que la troponina está falsamente elevada por la enfermedad renal crónica y puede ignorarse.',
+         v:'bad', cost:22,
+         fb:`<p>La enfermedad renal eleva la troponina de forma real, no falsa, y esa elevación tiene valor pronóstico adverso. Reducir a la mitad la tasa de filtración glomerular aproximadamente <strong>duplica</strong> el valor basal de troponina.</p>
+         <p>Lo correcto es interpretarla con el contexto y con mediciones seriadas, no descartarla.</p>`,
+         src:'Quinta Definición Universal del IM (2026): interpretación de la troponina en la enfermedad renal crónica.'}
+      ]
+    },
+    {
+      stem:'Este es el ECG con el paciente a 152 lpm. ¿Cómo lo lee?',
+      ecg:'avr_global',
+      ecgCap:'ECG durante fibrilación auricular con respuesta ventricular rápida.',
+      opts:[
+        {k:'A', t:'Descenso difuso del ST en múltiples territorios con elevación del ST en aVR: patrón de isquemia global, no de oclusión de un vaso único.',
+         v:'good', cost:3,
+         fb:`<p>Correcto, y la distinción es la clave del caso. El <strong>descenso difuso del ST acompañado de elevación en aVR</strong> refleja isquemia subendocárdica global. Puede deberse a enfermedad del tronco coronario izquierdo o de tres vasos, pero también a un desequilibrio grave entre aporte y demanda, que es lo que ocurre aquí: fiebre, taquiarritmia a 152, hipotensión e hipoxemia, todos simultáneos.</p>
+         <p>En el infarto secundario los cambios electrocardiográficos suelen ser <strong>globales</strong> más que regionales.</p>`,
+         src:'Quinta Definición Universal del IM (2026): en el infarto secundario predominan los cambios isquémicos globales.'},
+        {k:'B', t:'Infarto sin elevación del ST extenso: activar protocolo de síndrome coronario y llevar a angiografía inmediata.',
+         v:'bad', cost:25, deteriora:true,
+         fb:`<p>Precipitado. Antes de llevar a la sala a un paciente séptico, hipotenso e hipoxémico con fibrilación auricular a 152 lpm, hay que corregir lo que está causando el desequilibrio. Se lleva al paciente al cateterismo y en la sala presenta deterioro respiratorio que obliga a intubación.</p>
+         <p>La conducta correcta pasa primero por tratar el desencadenante y reevaluar el ECG cuando la frecuencia esté controlada.</p>`,
+         src:'Quinta Definición Universal del IM (2026): la vía diagnóstica del infarto secundario comienza por tratar la condición aguda.'},
+        {k:'C', t:'Elevación del ST en aVR aislada: equivale a un infarto con elevación del ST y requiere fibrinólisis.',
+         v:'bad', cost:30, deteriora:true,
+         fb:`<p>No. La elevación en aVR con descenso difuso <strong>no es indicación de fibrinólisis</strong>: no traduce una oclusión trombótica única susceptible de lisis, y en un paciente séptico e hipotenso añade riesgo hemorrágico sin beneficio.</p>`,
+         src:'La elevación aislada de aVR con descenso difuso no cumple criterios de reperfusión farmacológica.'}
+      ]
+    },
+    {
+      stem:'Trata el desencadenante: control de frecuencia, oxígeno, líquidos con precaución y antibiótico. A las 3 horas, FC 92 lpm, PA 118/70, saturación 94%. El ECG de control muestra resolución completa del descenso del ST. Troponina de control: 210 ng/L, luego 190 ng/L. ¿Qué diagnóstico establece?',
+      labs:[
+        ['Troponina, ingreso','180 ng/L','hi'],
+        ['Troponina, 3 h','210 ng/L','hi'],
+        ['Troponina, 6 h','190 ng/L','hi'],
+        ['Patrón','Ascenso y descenso','']
+      ],
+      opts:[
+        {k:'A', t:'Lesión miocárdica aguda de mecanismo isquémico por desequilibrio aporte-demanda. Para confirmar infarto secundario necesito ecocardiograma y, cuando sea apropiado, evaluación de la anatomía coronaria.',
+         v:'good', cost:4,
+         fb:`<p>Este es el razonamiento que la Quinta Definición Universal exige. Los criterios del <strong>infarto secundario</strong> son deliberadamente exigentes, para diferenciarlo de la simple lesión miocárdica:</p>
+         <p>Se <em>considera</em> ante lesión miocárdica aguda con una condición aguda alternativa que produce desequilibrio, más al menos un elemento clínico o electrocardiográfico de isquemia. Se <em>confirma</em> cuando la imagen demuestra enfermedad coronaria obstructiva (estenosis ≥70%, o ≥50% con significado funcional) sin patología coronaria aguda, <strong>o</strong> una alteración segmentaria de la contractilidad nueva o presumiblemente nueva, o ausencia de miocardio viable.</p>
+         <p>La mayoría de estos pacientes no cumplirá esos criterios, y entonces el diagnóstico correcto es lesión miocárdica aguda, no infarto.</p>`,
+         src:'Quinta Definición Universal del IM (2026): criterios diagnósticos del infarto secundario.'},
+        {k:'B', t:'Infarto secundario confirmado: el ascenso y descenso de la troponina con síntomas y cambios del ST son suficientes.',
+         v:'mid', cost:8,
+         fb:`<p>Se queda a un paso. Esos elementos permiten <em>considerar</em> el diagnóstico, no confirmarlo. La Quinta Definición Universal añadió criterios objetivos por imagen precisamente porque <strong>los síntomas, el ECG y la troponina no bastan para establecer infarto secundario de forma fiable</strong> en el paciente agudamente enfermo.</p>
+         <p>Falta la confirmación: enfermedad coronaria obstructiva sin patología coronaria aguda, o alteración segmentaria nueva de la contractilidad o ausencia de viabilidad.</p>`,
+         src:'Quinta Definición Universal del IM (2026): criterios de confirmación por imagen en el infarto secundario.'},
+        {k:'C', t:'Lesión miocárdica crónica por enfermedad renal: no requiere estudio adicional.',
+         v:'bad', cost:14,
+         fb:`<p>El patrón lo contradice. Hay un <strong>ascenso y descenso</strong> claro (180 → 210 → 190), y eso define lesión <em>aguda</em>. La lesión crónica se define por dos o más valores elevados de forma estable medidos en un contexto clínico estable; el criterio orientador es un cambio menor del 20% entre mediciones.</p>`,
+         src:'Quinta Definición Universal del IM (2026): criterios de lesión miocárdica crónica.'},
+        {k:'D', t:'Infarto primario, porque tiene enfermedad coronaria subyacente por sus factores de riesgo.',
+         v:'bad', cost:12,
+         fb:`<p>El infarto primario exige una <strong>patología coronaria aguda</strong>: aterotrombosis, disección, embolia, vasoespasmo, o falla tardía de stent o injerto. La presencia de factores de riesgo o de enfermedad coronaria estable no la constituye.</p>
+         <p>Aquí el desencadenante fue la condición aguda, y los cambios revirtieron al tratarla. Ese comportamiento apunta a mecanismo secundario.</p>`,
+         src:'Quinta Definición Universal del IM (2026): criterios diagnósticos del infarto primario.'}
+      ]
+    },
+    {
+      stem:'Escenario alterno: suponga que los descensos del ST <strong>no</strong> se hubieran resuelto al controlar la frecuencia y la presión. ¿Qué implicaría?',
+      opts:[
+        {k:'A', t:'Debo reconsiderar el diagnóstico de infarto primario y evaluar la anatomía coronaria.',
+         v:'good', cost:3,
+         fb:`<p>Correcto, y es una regla operativa que vale la pena memorizar: <strong>los cambios electrocardiográficos marcados que no se resuelven rápidamente con el tratamiento de la causa desencadenante deben hacer reconsiderar el diagnóstico de infarto primario</strong>.</p>
+         <p>Además, conviene recordar que la enfermedad aguda —en particular la sepsis y el sangrado— puede <em>desencadenar</em> aterotrombosis. Infarto primario y secundario no son categorías mutuamente excluyentes en la cabecera del paciente: son hipótesis que se ordenan por probabilidad y se resuelven con imagen.</p>`,
+         src:'Quinta Definición Universal del IM (2026): persistencia de cambios electrocardiográficos y diagnóstico diferencial.'},
+        {k:'B', t:'Significaría solo que el control de frecuencia fue insuficiente; repetir el ECG en 12 horas.',
+         v:'bad', cost:20, deteriora:true,
+         fb:`<p>Esperar 12 horas ante isquemia persistente en un paciente con troponina en ascenso es una demora que no tiene justificación. La persistencia del cambio es precisamente la señal que obliga a subir la sospecha, no a esperar.</p>`,
+         src:'La isquemia persistente exige reevaluación diagnóstica activa.'},
+        {k:'C', t:'Confirmaría el infarto secundario, ya que hay más isquemia por el desequilibrio.',
+         v:'bad', cost:15,
+         fb:`<p>Es la inferencia opuesta a la correcta. Si se corrigió el desequilibrio y la isquemia persiste, el desequilibrio ya no explica el cuadro. Eso apunta hacia una patología coronaria aguda, es decir, hacia infarto primario.</p>`,
+         src:'Quinta Definición Universal del IM (2026): interpretación de los cambios electrocardiográficos que no revierten.'}
+      ]
+    }
+  ],
+  cierre:`<p>Este caso no tiene un momento heroico y por eso es el más difícil. La habilidad que evalúa no es reconocer un patrón, sino <strong>resistir la tentación de convertir una troponina elevada en un diagnóstico</strong>.</p>
+  <p>La secuencia que conviene llevarse: troponina elevada → ¿aguda o crónica? → si es aguda, ¿isquémica o no isquémica? → si es isquémica, ¿hay una condición aguda que la explique? → confirmar o descartar con imagen.</p>`,
+  docente:`<h4>Para el debriefing del caso 3</h4>
+  <ul><li>Pedir a los estudiantes que enumeren, de memoria, cinco causas no isquémicas de elevación de troponina. Es la lista que más olvidan.</li>
+  <li>Discutir el daño del sobrediagnóstico: anticoagulación en paciente que sangra, angiografía en paciente inestable, y la causa real sin tratar.</li>
+  <li>Señalar el término MINOCA, que pasó a significar <em>lesión miocárdica</em> con arterias coronarias no obstructivas y funciona como diagnóstico de trabajo, no final.</li>
+  <li>Cerrar con la pregunta que ordena todo: ¿qué tratamiento cambiaría si el diagnóstico fuera uno u otro?</li></ul>`
+}
+];
+
+/* ================= ESTACIÓN DE ECG ================= */
+const STATION = [
+  {
+    id:'s1', ecg:'de_winter', titulo:'Trazado 1',
+    ctx:'Hombre de 49 años, dolor torácico opresivo de 30 minutos, en curso en el momento del registro.',
+    q:'¿Qué patrón reconoce y qué conducta exige?',
+    opts:[
+      {t:'Patrón de De Winter: equivalente de oclusión aguda de la descendente anterior. Reperfusión inmediata.', ok:true},
+      {t:'Isquemia subendocárdica inespecífica. Manejo médico y troponinas seriadas.', ok:false},
+      {t:'Hiperpotasemia: ondas T picudas. Solicitar potasio y tratar.', ok:false},
+      {t:'Patrón de Wellens: estrategia invasiva en 24 horas.', ok:false}
+    ],
+    exp:`<p>Descenso del ST de <strong>ascenso rectilíneo</strong> en el punto J con ondas T <strong>altas, positivas y simétricas</strong> en las precordiales, con frecuencia acompañado de elevación leve en aVR. Se registra con el paciente sintomático y equivale a oclusión aguda de la descendente anterior.</p>
+    <p>Diferencia con la hiperpotasemia: allí las T son picudas y de base estrecha, sin descenso del ST de ascenso rectilíneo, y suele haber ensanchamiento del QRS y aplanamiento de la P.</p>`
+  },
+  {
+    id:'s2', ecg:'wellens_b', titulo:'Trazado 2',
+    ctx:'Mujer de 61 años, dos episodios de dolor torácico en las últimas 24 horas. En el momento del registro está sin dolor.',
+    q:'¿Qué reconoce y qué está contraindicado?',
+    opts:[
+      {t:'Patrón de Wellens tipo B: estenosis crítica de la descendente anterior. La prueba de esfuerzo está contraindicada.', ok:true},
+      {t:'Isquemia resuelta: se puede dar salida con seguimiento ambulatorio.', ok:false},
+      {t:'Cambios secundarios a hipertrofia ventricular izquierda.', ok:false},
+      {t:'Infarto anterior antiguo con ondas T de evolución.', ok:false}
+    ],
+    exp:`<p>Ondas T <strong>profundamente invertidas y simétricas</strong> en V2-V4, con progresión conservada de la onda R y sin ondas Q, en el paciente <strong>sin dolor</strong>. El hallazgo aparece durante el intervalo libre de síntomas y anuncia un infarto anterior extenso si la lesión no se trata.</p>
+    <p>Someter a este paciente a una prueba de esfuerzo puede precipitar la oclusión. Corresponde estrategia invasiva.</p>`
+  },
+  {
+    id:'s3', ecg:'posterior', titulo:'Trazado 3',
+    ctx:'Hombre de 58 años, dolor torácico de 90 minutos. El ECG estándar «no muestra elevación del ST».',
+    q:'¿Qué está viendo y qué derivaciones adicionales solicita?',
+    opts:[
+      {t:'Infarto posterior: descenso del ST en V1-V3 con onda R dominante. Solicitar V7-V9.', ok:true},
+      {t:'Isquemia anterior subendocárdica. Manejo médico.', ok:false},
+      {t:'Bloqueo incompleto de rama derecha. Sin significado agudo.', ok:false},
+      {t:'Patrón de sobrecarga del ventrículo derecho por embolia pulmonar.', ok:false}
+    ],
+    exp:`<p>Este es el infarto que más se pierde. El descenso del ST de 1 mm o más en V1-V3, sobre todo cuando la <strong>onda R es mayor que la S</strong> en V1 o V2, corresponde a la imagen especular de una elevación del ST en la pared posterior.</p>
+    <p>Se confirma con las derivaciones posteriores <strong>V7-V9</strong>. Un paciente con infarto posterior aislado es candidato a reperfusión, aunque el trazado de 12 derivaciones se haya informado como «sin elevación del ST».</p>`
+  },
+  {
+    id:'s4', ecg:'stemi_anterior', titulo:'Trazado 4',
+    ctx:'Hombre de 55 años, dolor torácico de 2 horas, diaforético.',
+    q:'¿Territorio y conducta inmediata?',
+    opts:[
+      {t:'Infarto anterior extenso. Activar reperfusión de inmediato sin esperar troponina.', ok:true},
+      {t:'Infarto anterior. Confirmar con troponina y luego decidir reperfusión.', ok:false},
+      {t:'Repolarización precoz en un paciente joven. Observación.', ok:false},
+      {t:'Pericarditis aguda: elevación del ST cóncava.', ok:false}
+    ],
+    exp:`<p>Elevación del ST en V1-V5 con extensión a DI y aVL y descenso recíproco en la cara inferior. La reciprocidad y la distribución regional confirman la oclusión.</p>
+    <p>La confirmación biomarcadora ocurre después: en la Quinta Definición Universal la lesión miocárdica aguda es necesaria para el <em>diagnóstico final</em> de infarto, pero <strong>no para activar la reperfusión</strong>.</p>`
+  },
+  {
+    id:'s5', ecg:'normal', titulo:'Trazado 5',
+    ctx:'Mujer de 52 años con dolor torácico opresivo iniciado hace 30 minutos, actualmente en curso.',
+    q:'El ECG no muestra alteraciones isquémicas. ¿Qué concluye?',
+    opts:[
+      {t:'Un ECG normal no descarta síndrome coronario agudo: repetir el trazado y usar troponina seriada con algoritmo validado.', ok:true},
+      {t:'ECG normal y paciente estable: se descarta origen coronario y se estudia otra causa.', ok:false},
+      {t:'ECG normal: una sola troponina negativa es suficiente para dar salida.', ok:false},
+      {t:'Solicitar prueba de esfuerzo inmediata con el dolor en curso.', ok:false}
+    ],
+    exp:`<p>El ECG inicial es normal o no diagnóstico en una proporción importante de los infartos. Ante dolor persistente o recurrente debe repetirse el trazado (por ejemplo cada 15 a 30 minutos) y aplicarse un <strong>algoritmo validado de troponina de alta sensibilidad, preferentemente 0 h/1 h</strong>.</p>
+    <p>En el paciente que consulta muy temprano, la primera troponina puede no haber ascendido todavía: la medición seriada es obligatoria antes de descartar.</p>`
+  },
+  {
+    id:'s6', ecg:'avr_global', titulo:'Trazado 6',
+    ctx:'Hombre de 68 años con dolor torácico en reposo, hipotenso, con signos de bajo gasto.',
+    q:'¿Cómo interpreta el patrón?',
+    opts:[
+      {t:'Descenso difuso del ST con elevación en aVR: isquemia global, sospecha de tronco izquierdo o enfermedad de tres vasos. Estrategia invasiva urgente.', ok:true},
+      {t:'Infarto con elevación del ST de cara lateral alta: fibrinólisis inmediata.', ok:false},
+      {t:'Sobrecarga digitálica.', ok:false},
+      {t:'Patrón normal en taquicardia sinusal.', ok:false}
+    ],
+    exp:`<p>El descenso del ST en múltiples territorios con <strong>elevación del ST en aVR</strong> traduce isquemia subendocárdica global. En el paciente con dolor en reposo y compromiso hemodinámico obliga a considerar enfermedad del tronco coronario izquierdo o de tres vasos, e indica estrategia invasiva urgente.</p>
+    <p>El mismo patrón puede aparecer por desequilibrio grave entre aporte y demanda: la diferencia la marca el contexto y la respuesta al tratamiento del desencadenante.</p>`
+  }
+];
+
+/* ================= EXAMEN FINAL ================= */
+const EXAM = [
+ {q:'Según la Quinta Definición Universal del Infarto de Miocardio (2026), ¿cómo se clasifica el infarto?',
+  o:['En tipos 1, 2, 3, 4a, 4b, 4c y 5',
+     'En infarto primario, secundario y relacionado con procedimiento',
+     'Únicamente en infarto con y sin elevación del ST',
+     'En infarto agudo, subagudo y crónico'],
+  a:1, e:'La clasificación numérica fue reemplazada por tres escenarios clínicos: primario (patología coronaria aguda espontánea), secundario (desequilibrio aporte-demanda por otra condición aguda) y relacionado con procedimiento. La clasificación electrocardiográfica en con y sin elevación del ST se conserva porque guía la conducta inmediata.'},
+
+ {q:'Una mujer de 60 años tiene una troponina de alta sensibilidad de 20 ng/L. El ensayo informa un percentil 99 uniforme de 26 ng/L, con umbrales específicos de 16 ng/L para mujeres y 34 ng/L para hombres. ¿Cuál es la interpretación correcta?',
+  o:['La troponina es normal porque está por debajo de 26 ng/L',
+     'Hay lesión miocárdica, porque supera el umbral específico para mujeres',
+     'El resultado no es interpretable sin conocer la función renal',
+     'Debe repetirse a las 6 horas antes de emitir cualquier juicio'],
+  a:1, e:'La Quinta Definición Universal define la lesión miocárdica con el percentil 99 específico por sexo, para evitar el sesgo sistemático y el subdiagnóstico del infarto en mujeres. Con el umbral uniforme esta paciente sería clasificada erróneamente como normal.'},
+
+ {q:'¿En cuánto tiempo debe realizarse e interpretarse el ECG de 12 derivaciones en un paciente con sospecha de síndrome coronario agudo?',
+  o:['Dentro de los primeros 10 minutos del primer contacto médico',
+     'Dentro de los primeros 30 minutos',
+     'Después de obtener la primera troponina',
+     'Dentro de la primera hora si el dolor persiste'],
+  a:0, e:'La meta es un ECG realizado e interpretado por personal competente en menos de 10 minutos desde el primer contacto médico. Un ECG tomado y no leído en ese lapso no cumple el objetivo.'},
+
+ {q:'Paciente con infarto con elevación del ST diagnosticado en un hospital sin hemodinamia. El traslado al centro con angioplastia primaria toma 145 minutos y no hay contraindicaciones para fibrinólisis. ¿Cuál es la conducta correcta?',
+  o:['Trasladar para angioplastia primaria, que siempre es superior',
+     'Fibrinólisis con objetivo de bolo en menos de 10 minutos y traslado posterior al centro con hemodinamia',
+     'Esperar la troponina para confirmar antes de fibrinolizar',
+     'Manejo médico y angiografía electiva en 48 horas'],
+  a:1, e:'La angioplastia primaria es de elección solo si puede realizarse dentro de 120 minutos desde el diagnóstico. Superado ese umbral corresponde fibrinólisis con objetivo de menos de 10 minutos hasta el bolo, seguida de traslado para angiografía entre 2 y 24 horas.'},
+
+ {q:'¿Cuál de los siguientes NO es un criterio de muy alto riesgo que obligue a estrategia invasiva inmediata en el síndrome coronario agudo sin elevación del ST?',
+  o:['Inestabilidad hemodinámica o choque cardiogénico',
+     'Dolor torácico recurrente refractario al tratamiento médico',
+     'Puntuación GRACE mayor de 140',
+     'Arritmias que amenazan la vida o paro cardíaco tras la presentación'],
+  a:2, e:'Una puntuación GRACE mayor de 140 es criterio de alto riesgo, que sitúa al paciente en la ventana de estrategia invasiva temprana dentro de 24 horas, no de estrategia inmediata. Los criterios de muy alto riesgo son inestabilidad hemodinámica o choque, dolor refractario, insuficiencia cardíaca por isquemia, arritmias que amenazan la vida o paro, complicaciones mecánicas y cambios dinámicos recurrentes del ST.'},
+
+ {q:'El patrón de De Winter se caracteriza por:',
+  o:['Ondas T bifásicas en V2-V3 en el paciente sin dolor',
+     'Descenso del ST de ascenso rectilíneo con ondas T altas y simétricas en precordiales',
+     'Elevación del ST cóncava y difusa con descenso del PR',
+     'Ondas Q patológicas con T invertidas en cara inferior'],
+  a:1, e:'De Winter equivale a oclusión aguda de la descendente anterior y exige reperfusión inmediata. La primera opción describe el patrón de Wellens, que se registra con el paciente sin dolor y corresponde a estenosis crítica con arteria permeable.'},
+
+ {q:'En un paciente con neumonía, fibrilación auricular a 150 lpm e hipotensión, la troponina asciende de 150 a 240 ng/L. Según los criterios vigentes, para confirmar un infarto secundario se requiere además:',
+  o:['Únicamente el ascenso y descenso de la troponina',
+     'Enfermedad coronaria obstructiva sin patología coronaria aguda, o una alteración segmentaria nueva de la contractilidad o ausencia de miocardio viable',
+     'Elevación del ST en dos derivaciones contiguas',
+     'Una puntuación GRACE mayor de 140'],
+  a:1, e:'Los criterios del infarto secundario priorizan la especificidad. Los síntomas, el ECG y la troponina permiten considerar el diagnóstico; la confirmación exige imagen: enfermedad coronaria obstructiva (estenosis ≥70%, o ≥50% con significado funcional) sin patología coronaria aguda, o alteración segmentaria nueva de la contractilidad o ausencia de viabilidad.'},
+
+ {q:'¿Qué define la lesión miocárdica crónica?',
+  o:['Una troponina elevada en un paciente con dolor torácico de más de 24 horas',
+     'Dos o más valores de troponina por encima del percentil 99 específico por sexo, medidos en un contexto clínico estable',
+     'Cualquier troponina elevada en un paciente con enfermedad renal crónica',
+     'Una troponina elevada que no desciende tras la reperfusión'],
+  a:1, e:'La lesión miocárdica crónica se considera ante dos o más valores elevados en contexto estable; se confirma al identificar una condición cardíaca o extracardíaca asociada a remodelado, y se excluye cuando la elevación se explica por interferencia analítica o por reducción del aclaramiento.'},
+
+ {q:'El término MINOCA, en su definición actualizada, significa:',
+  o:['Infarto de miocardio con arterias coronarias no obstructivas, como diagnóstico definitivo',
+     'Lesión miocárdica con arterias coronarias no obstructivas, como diagnóstico de trabajo que exige estudio adicional',
+     'Miocardiopatía isquémica con arterias normales',
+     'Infarto secundario en paciente sin factores de riesgo'],
+  a:1, e:'El cambio de "infarto" a "lesión" reconoce que la mayoría de estos pacientes tiene finalmente una causa cardíaca no coronaria (miocarditis, síndrome de takotsubo, miocardiopatía) o extracardíaca. La resonancia magnética cardíaca, idealmente dentro de las dos semanas, es la modalidad de elección para establecer el diagnóstico final.'},
+
+ {q:'Respecto al oxígeno suplementario en el síndrome coronario agudo:',
+  o:['Debe administrarse a todos los pacientes de forma rutinaria',
+     'Se indica cuando la saturación de oxígeno es menor de 90%',
+     'Se indica cuando la saturación es menor de 95%',
+     'Está contraindicado en todos los casos'],
+  a:1, e:'El oxígeno suplementario en pacientes no hipoxémicos no ha demostrado beneficio y existe señal de posible daño. La indicación es hipoxemia con saturación menor de 90%.'},
+
+ {q:'Un paciente con infarto inferior presenta elevación del ST en V4R. ¿Qué implicación terapéutica inmediata tiene este hallazgo?',
+  o:['Indica fibrinólisis urgente independientemente del tiempo de traslado',
+     'Contraindica la aspirina por riesgo de sangrado',
+     'Obliga a evitar nitratos y otros venodilatadores por dependencia de precarga',
+     'Indica marcapasos transitorio profiláctico en todos los casos'],
+  a:2, e:'El compromiso del ventrículo derecho hace que el gasto cardíaco dependa de la precarga. Los venodilatadores pueden producir hipotensión grave. El manejo incluye carga de volumen y evitar diuréticos y nitratos.'},
+
+ {q:'La meta de colesterol LDL en prevención secundaria tras un síndrome coronario agudo es:',
+  o:['Menos de 100 mg/dL',
+     'Menos de 70 mg/dL',
+     'Menos de 55 mg/dL, con reducción de al menos 50% respecto del valor basal',
+     'No existe meta definida; basta con usar estatina de alta intensidad'],
+  a:2, e:'La meta es un LDL menor de 55 mg/dL (1,4 mmol/L) junto con una reducción de al menos 50% respecto del basal. En pacientes con un evento recurrente puede considerarse una meta menor de 40 mg/dL.'},
+
+ {q:'Un paciente con síndrome coronario agudo lleva 6 semanas con estatina de alta intensidad a dosis máxima tolerada y su LDL es de 78 mg/dL. Según el algoritmo de titulación, la conducta es:',
+  o:['Mantener la misma terapia y controlar en 6 meses',
+     'Añadir ezetimiba',
+     'Suspender la estatina y cambiar a un inhibidor de PCSK9',
+     'Duplicar la dosis de estatina aunque exceda la dosis máxima'],
+  a:1, e:'El algoritmo prevé reevaluación a las 4-6 semanas. Si no se alcanza la meta con la estatina de máxima intensidad tolerada, se añade ezetimiba. Si tras otras 4-6 semanas persiste fuera de meta con estatina y ezetimiba, se añade un inhibidor de PCSK9.'},
+
+ {q:'En un entorno sin disponibilidad de troponina ni de imagen cardíaca, ¿cómo puede presumirse el diagnóstico de infarto?',
+  o:['No es posible emitir ningún diagnóstico sin biomarcadores',
+     'Con síntomas compatibles con isquemia miocárdica aguda más cambios isquémicos nuevos en el ECG o desarrollo de ondas Q patológicas',
+     'Únicamente con la respuesta del dolor a la nitroglicerina',
+     'Con la presencia de al menos tres factores de riesgo cardiovascular'],
+  a:1, e:'La Quinta Definición Universal incorpora criterios para entornos de recursos limitados: el diagnóstico se presume ante síntomas consistentes con isquemia miocárdica aguda acompañados de cambios isquémicos nuevos en el ECG o de ondas Q patológicas.'},
+
+ {q:'Respecto a la angina inestable en la era de la troponina de alta sensibilidad:',
+  o:['Desapareció del espectro del síndrome coronario agudo',
+     'Es más frecuente que hace veinte años',
+     'Se ha vuelto progresivamente menos frecuente, pero sigue formando parte del espectro del síndrome coronario agudo',
+     'Se define ahora por una troponina entre el percentil 97,5 y el 99'],
+  a:2, e:'Al bajar el umbral diagnóstico del infarto con los ensayos de alta sensibilidad, muchos pacientes antes rotulados como angina inestable se reclasifican como infarto. La angina inestable se ha vuelto menos frecuente, tiene mejor pronóstico y sigue formando parte del espectro.'}
+];
+</script>
+<script>/* ============================================================
+   Taller SCA — lógica de la aplicación
+   ============================================================ */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+const SCREENS = ['portada','nuevo','c1','c2','c3','estacion','examen','resultados'];
+const LABELS = {
+  portada:'Inicio', nuevo:'Lo que cambió', c1:'Caso 1', c2:'Caso 2',
+  c3:'Caso 3', estacion:'Estación de ECG', examen:'Evaluación', resultados:'Resultados'
+};
+
+const state = {
+  screen: 0,
+  decisions: {},      // 'c1-0' -> {v, cost, k}
+  clocks: {c1:0, c2:0, c3:0},
+  vitals: {},
+  station: {},        // id -> true/false
+  exam: {},           // idx -> chosen
+  examLocked: false
+};
+
+/* ---------- Monitor ---------- */
+function setVitals(v, flash) {
+  const map = {fc:'#vFc', pa:'#vPa', spo2:'#vSpo2', fr:'#vFr'};
+  for (const k in map) {
+    const el = $(map[k]); if (!el || v[k] === undefined) continue;
+    const box = el.closest('.vit');
+    el.firstChild ? null : null;
+    el.innerHTML = v[k] + (k==='spo2' ? '<small>%</small>' : k==='fc' ? '<small> lpm</small>' : k==='fr' ? '<small> rpm</small>' : '');
+    box.classList.remove('bad','warn','good');
+    if (k==='fc') box.classList.add(v.fc>130?'bad':v.fc>110?'warn':'good');
+    if (k==='spo2') box.classList.add(v.spo2<90?'bad':v.spo2<94?'warn':'good');
+    if (k==='pa') { const sys=parseInt(v.pa); box.classList.add(sys<90?'bad':sys<100?'warn':'good'); }
+    if (flash) { box.classList.add('pulse'); setTimeout(()=>box.classList.remove('pulse'),520); }
+  }
+  if (v.ritmo) $('#vRitmo').textContent = v.ritmo;
+  state.vitals = Object.assign({}, state.vitals, v);
+}
+function setClock(mins) {
+  $('#vClock').innerHTML = '+' + mins + '<small> min</small>';
+  const box = $('#clock');
+  box.classList.remove('bad','warn');
+  if (mins > 90) box.classList.add('bad'); else if (mins > 45) box.classList.add('warn');
+  box.classList.add('pulse'); setTimeout(()=>box.classList.remove('pulse'),520);
+}
+function showMonitor(on, caseObj) {
+  $('#monitor').style.display = on ? 'flex' : 'none';
+  if (on && caseObj) { setVitals(caseObj.vitals); setClock(state.clocks[caseObj.id]); }
+}
+
+/* ---------- Navegación ---------- */
+function buildRail() {
+  const rail = $('#rail');
+  rail.innerHTML = SCREENS.map(()=>'<i></i>').join('');
+}
+function paintRail() {
+  $$('#rail i').forEach((el,i)=>{
+    el.className = i < state.screen ? 'done' : i === state.screen ? 'now' : '';
+  });
+  $('#phaseTag').innerHTML = '<b>' + LABELS[SCREENS[state.screen]] + '</b>';
+}
+function go(i) {
+  state.screen = Math.max(0, Math.min(SCREENS.length-1, i));
+  const key = SCREENS[state.screen];
+  $$('section.screen').forEach(s => s.classList.toggle('on', s.id === 'sc-' + key));
+  paintRail();
+  const c = CASES.find(x=>x.id===key);
+  showMonitor(!!c, c);
+  if (key === 'resultados') renderResults();
+  window.scrollTo({top:0, behavior:'instant'});
+  drawPendingEcgs();
+}
+function next(){ go(state.screen+1); }
+function prev(){ go(state.screen-1); }
+
+/* ---------- ECG diferido (se dibuja al mostrarse) ---------- */
+function drawPendingEcgs() {
+  $$('.ecgBox[data-ecg]:not([data-drawn])').forEach(box => {
+    const sc = box.closest('section.screen');
+    if (sc && !sc.classList.contains('on')) return;
+    box.innerHTML = renderECG(box.dataset.ecg, {mmPx:4});
+    box.setAttribute('data-drawn','1');
+  });
+}
+
+/* ---------- Render de casos ---------- */
+function renderCase(c) {
+  const sec = document.createElement('section');
+  sec.className = 'screen'; sec.id = 'sc-' + c.id;
+  let h = `<div class="eyebrow">${LABELS[c.id]}</div>
+  <h1>${c.titulo}</h1>
+  <p class="lede">${c.subtitulo}</p>
+  <div class="vignette">${c.intro}</div>`;
+
+  c.steps.forEach((st, i) => {
+    const uid = c.id + '-' + i;
+    h += `<div class="step" id="step-${uid}" ${i>0?'style="display:none"':''}>`;
+    if (st.ecg) h += `<div class="ecgBox" data-ecg="${st.ecg}"></div><div class="ecgCap">${st.ecgCap||''}</div>`;
+    if (st.labs) {
+      h += `<table class="labs"><thead><tr><th>Estudio</th><th>Resultado</th></tr></thead><tbody>` +
+        st.labs.map(r=>`<tr><td>${r[0]}</td><td class="n ${r[2]||''}">${r[1]}</td></tr>`).join('') +
+        `</tbody></table>`;
+    }
+    h += `<div class="qStem">${st.stem}</div><div class="opts" data-uid="${uid}">`;
+    st.opts.forEach((o, j) => {
+      h += `<button class="opt" data-uid="${uid}" data-j="${j}"><span class="k">${o.k}</span><span>${o.t}</span></button>`;
+    });
+    h += `</div><div class="fbSlot" id="fb-${uid}"></div></div>`;
+  });
+
+  h += `<div class="step" id="step-${c.id}-end" style="display:none">
+    <hr class="rule"><h2>Cierre del caso</h2>${c.cierre}
+    <div class="teach">${c.docente}</div>
+    <div class="navRow"><button class="btn" onclick="next()">Continuar</button></div></div>`;
+  sec.innerHTML = h;
+  return sec;
+}
+
+function pick(btn) {
+  const uid = btn.dataset.uid, j = +btn.dataset.j;
+  if (state.decisions[uid]) return;
+  const [cid, si] = uid.split('-');
+  const c = CASES.find(x=>x.id===cid);
+  const step = c.steps[+si];
+  const o = step.opts[j];
+
+  state.decisions[uid] = {v:o.v, cost:o.cost, k:o.k};
+  state.clocks[cid] += o.cost;
+
+  const wrap = btn.parentElement;
+  $$('.opt', wrap).forEach((b,idx) => {
+    b.disabled = true;
+    if (idx === j) b.classList.add('picked', o.v);
+    else if (step.opts[idx].v === 'good') b.classList.add('isbest');
+  });
+
+  const verdict = o.v==='good' ? 'Conducta adecuada' : o.v==='mid' ? 'Aceptable, pero con costo' : 'Conducta insegura';
+  $('#fb-'+uid).innerHTML =
+    `<div class="fb ${o.v}"><span class="verdict">${verdict}</span>${o.fb}
+     <div class="cost">Tiempo consumido: ${o.cost} min &nbsp;|&nbsp; total del caso: ${state.clocks[cid]} min</div>
+     ${o.src?`<div class="src">${o.src}</div>`:''}</div>
+     <div class="navRow"><button class="btn" data-adv="${uid}">Continuar</button></div>`;
+
+  setClock(state.clocks[cid]);
+  if (o.deteriora) {
+    const v = Object.assign({}, state.vitals);
+    v.fc = Math.min(178, (parseInt(v.fc)||90) + 26);
+    const sys = parseInt(v.pa)||140, dia = parseInt(v.pa.split('/')[1])||80;
+    v.pa = Math.max(70, sys-38) + '/' + Math.max(40, dia-22);
+    v.spo2 = Math.max(80, (parseInt(v.spo2)||95) - 5);
+    setVitals(v, true);
+  }
+  $('#fb-'+uid).querySelector('[data-adv]').addEventListener('click', () => advance(cid, +si));
+}
+
+function advance(cid, si) {
+  const c = CASES.find(x=>x.id===cid);
+  const nextId = (si+1 < c.steps.length) ? `step-${cid}-${si+1}` : `step-${cid}-end`;
+  const el = $('#'+nextId);
+  el.style.display = 'block';
+  drawPendingEcgs();
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ---------- Estación de ECG ---------- */
+function renderStation() {
+  const box = $('#stationBody');
+  box.innerHTML = STATION.map((s,i)=>`
+    <div class="panel" id="st-${s.id}">
+      <div class="eyebrow">${s.titulo}</div>
+      <p><strong>${s.ctx}</strong></p>
+      <div class="ecgBox" data-ecg="${s.ecg}"></div>
+      <div class="qStem">${s.q}</div>
+      <div class="opts" data-st="${s.id}">
+        ${s.opts.map((o,j)=>`<button class="opt" data-st="${s.id}" data-j="${j}"><span class="k">${'ABCD'[j]}</span><span>${o.t}</span></button>`).join('')}
+      </div>
+      <div id="stfb-${s.id}"></div>
+    </div>`).join('');
+}
+function pickStation(btn) {
+  const id = btn.dataset.st, j = +btn.dataset.j;
+  if (state.station[id] !== undefined) return;
+  const s = STATION.find(x=>x.id===id);
+  const ok = s.opts[j].ok;
+  state.station[id] = ok;
+  $$('.opt', btn.parentElement).forEach((b,idx)=>{
+    b.disabled = true;
+    if (idx===j) b.classList.add('picked', ok?'good':'bad');
+    else if (s.opts[idx].ok) b.classList.add('isbest');
+  });
+  $('#stfb-'+id).innerHTML = `<div class="fb ${ok?'good':'bad'}"><span class="verdict">${ok?'Correcto':'Revise el trazado'}</span>${s.exp}</div>`;
+  $('#st-'+id).classList.add(ok?'solved':'failed');
+  const done = Object.keys(state.station).length;
+  $('#stProg').textContent = done + ' de ' + STATION.length;
+  if (done === STATION.length) $('#stNext').disabled = false;
+}
+
+/* ---------- Examen ---------- */
+function renderExam() {
+  $('#examBody').innerHTML = EXAM.map((q,i)=>`
+    <div class="exQ">
+      <div class="exN">Pregunta ${i+1} de ${EXAM.length}</div>
+      <div class="qStem">${q.q}</div>
+      <div class="opts" data-ex="${i}">
+        ${q.o.map((t,j)=>`<button class="opt" data-ex="${i}" data-j="${j}"><span class="k">${'ABCD'[j]}</span><span>${t}</span></button>`).join('')}
+      </div>
+      <div id="exfb-${i}"></div>
+    </div>`).join('');
+}
+function pickExam(btn) {
+  const i = +btn.dataset.ex, j = +btn.dataset.j;
+  if (state.exam[i] !== undefined) return;
+  state.exam[i] = j;
+  const q = EXAM[i]; const ok = j === q.a;
+  $$('.opt', btn.parentElement).forEach((b,idx)=>{
+    b.disabled = true;
+    if (idx===j) b.classList.add('picked', ok?'good':'bad');
+    else if (idx===q.a) b.classList.add('isbest');
+  });
+  $('#exfb-'+i).innerHTML = `<div class="fb ${ok?'good':'bad'}"><span class="verdict">${ok?'Correcto':'Incorrecto'}</span><p>${q.e}</p></div>`;
+  const n = Object.keys(state.exam).length;
+  $('#exProg').textContent = n + ' de ' + EXAM.length;
+  $('#exBar').style.width = (n/EXAM.length*100) + '%';
+  if (n === EXAM.length) $('#exNext').disabled = false;
+}
+
+/* ---------- Resultados ---------- */
+function renderResults() {
+  const dec = Object.values(state.decisions);
+  const good = dec.filter(d=>d.v==='good').length;
+  const mid  = dec.filter(d=>d.v==='mid').length;
+  const bad  = dec.filter(d=>d.v==='bad').length;
+  const total = dec.length || 1;
+  const decPts = (good*1 + mid*0.5) / total * 100;
+
+  const stVals = Object.values(state.station);
+  const stOk = stVals.filter(Boolean).length;
+  const stPts = stVals.length ? stOk/stVals.length*100 : 0;
+
+  let exOk = 0;
+  EXAM.forEach((q,i)=>{ if (state.exam[i] === q.a) exOk++; });
+  const exPts = exOk / EXAM.length * 100;
+
+  // Ponderación alineada con la lista de chequeo institucional
+  const final = Math.round(decPts*0.45 + stPts*0.25 + exPts*0.30);
+
+  const t1 = state.clocks.c1, t2 = state.clocks.c2, t3 = state.clocks.c3;
+  const nivel = final>=85 ? 'Desempeño sobresaliente' : final>=70 ? 'Desempeño competente' : final>=55 ? 'Desempeño en desarrollo' : 'Requiere refuerzo dirigido';
+
+  $('#resBody').innerHTML = `
+  <div class="grid3">
+    <div class="panel"><div class="score">${final}</div><div class="scoreLab">Puntaje global sobre 100</div>
+      <div class="bar" style="margin-top:14px"><i style="width:${final}%"></i></div>
+      <p style="margin:0;font-family:var(--f-ui);font-size:14px;color:var(--gold-lt)">${nivel}</p></div>
+    <div class="panel"><h3 style="margin-top:0">Toma de decisiones</h3>
+      <table class="labs"><tbody>
+      <tr><td>Conductas adecuadas</td><td class="n ok">${good}</td></tr>
+      <tr><td>Aceptables con costo</td><td class="n">${mid}</td></tr>
+      <tr><td>Conductas inseguras</td><td class="n ${bad?'hi':''}">${bad}</td></tr>
+      <tr><td>Subtotal</td><td class="n">${Math.round(decPts)}%</td></tr>
+      </tbody></table></div>
+    <div class="panel"><h3 style="margin-top:0">Tiempo acumulado por caso</h3>
+      <table class="labs"><tbody>
+      <tr><td>Caso 1, hasta reperfusión</td><td class="n ${t1>40?'hi':'ok'}">${t1} min</td></tr>
+      <tr><td>Caso 2</td><td class="n ${t2>50?'hi':'ok'}">${t2} min</td></tr>
+      <tr><td>Caso 3</td><td class="n ${t3>40?'hi':'ok'}">${t3} min</td></tr>
+      </tbody></table>
+      <p style="font-size:14px;color:var(--muted);margin:6px 0 0">En el caso 1, un total por debajo de 30 minutos refleja una secuencia sin demoras evitables.</p></div>
+  </div>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Estación de electrocardiografía</h3>
+      <div class="bar"><i style="width:${stPts}%"></i></div>
+      <p style="margin:0">${stOk} trazados correctos de ${STATION.length}.</p></div>
+    <div class="panel"><h3 style="margin-top:0">Evaluación final</h3>
+      <div class="bar"><i style="width:${exPts}%"></i></div>
+      <p style="margin:0">${exOk} respuestas correctas de ${EXAM.length}.</p></div>
+  </div>`;
+}
+
+function exportResults() {
+  const name = ($('#stuName').value || 'estudiante').trim();
+  let exOk = 0; EXAM.forEach((q,i)=>{ if (state.exam[i]===q.a) exOk++; });
+  const stOk = Object.values(state.station).filter(Boolean).length;
+  const dec = Object.values(state.decisions);
+  const lines = [
+    'TALLER: Abordaje integral del paciente con síndrome coronario agudo',
+    'Universidad de Santander, Facultad de Medicina',
+    'Estudiante: ' + name,
+    'Fecha: ' + new Date().toLocaleDateString('es-CO'),
+    '',
+    'Decisiones adecuadas: ' + dec.filter(d=>d.v==='good').length + ' de ' + dec.length,
+    'Decisiones aceptables con costo: ' + dec.filter(d=>d.v==='mid').length,
+    'Decisiones inseguras: ' + dec.filter(d=>d.v==='bad').length,
+    'Estación de ECG: ' + stOk + ' de ' + STATION.length,
+    'Evaluación final: ' + exOk + ' de ' + EXAM.length,
+    'Tiempo acumulado - Caso 1: ' + state.clocks.c1 + ' min, Caso 2: ' + state.clocks.c2 + ' min, Caso 3: ' + state.clocks.c3 + ' min'
+  ];
+  const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'desempeno-taller-sca-' + name.toLowerCase().replace(/\s+/g,'-') + '.txt';
+  a.click();
+}
+
+/* ---------- Arranque ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const host = $('#caseHost');
+  CASES.forEach(c => host.appendChild(renderCase(c)));
+  renderStation();
+  renderExam();
+  buildRail();
+
+  // portada: ECG decorativo
+  $('#coverEcg').innerHTML = renderStrip('stemi_inferior', ['II','III','aVF'], {mmPx:7, dur:3.4});
+
+  document.addEventListener('click', e => {
+    const o = e.target.closest('.opt');
+    if (!o || o.disabled) return;
+    if (o.dataset.uid !== undefined) pick(o);
+    else if (o.dataset.st !== undefined) pickStation(o);
+    else if (o.dataset.ex !== undefined) pickExam(o);
+  });
+
+  $('#docenteBtn').addEventListener('click', () => {
+    document.body.classList.toggle('docente');
+    $('#docenteBtn').textContent = document.body.classList.contains('docente')
+      ? 'Ocultar notas del docente' : 'Modo docente';
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'd' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('#docenteBtn').click(); }
+  });
+
+  go(0);
+});
+</script>
+</body>
+</html>
